@@ -1,0 +1,26 @@
+# Secrets
+.env
+
+# Runtime data (sqlite db + uploaded files)
+data/
+
+# Reference solutions are kept off the participants' branch
+solutions/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Local agent scratch
+.superpowers/
