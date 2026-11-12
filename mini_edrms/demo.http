@@ -1,0 +1,51 @@
+### mini-EDRMS demo requests (VS Code "REST Client" or JetBrains HTTP Client).
+### Start the server first: make run
+
+@base = http://127.0.0.1:8000
+
+### Health
+GET {{base}}/health
+
+### Upload a sample
+POST {{base}}/documents
+Content-Type: multipart/form-data; boundary=demo
+
+--demo
+Content-Disposition: form-data; name="file"; filename="finance_01.png"
+Content-Type: image/png
+
+< ./samples/finance_01.png
+--demo--
+
+### List documents (optionally search with ?q=)
+GET {{base}}/documents?q=invoice
+
+### Get one document
+GET {{base}}/documents/1
+
+### Extract text (Tesseract, or the sidecar .txt if Tesseract is not installed)
+POST {{base}}/documents/1/ocr
+
+### File under a category: correspondence | hr | finance | procurement | legal
+PUT {{base}}/documents/1/category
+Content-Type: application/json
+
+{"category": "finance", "reason": "It is an invoice"}
+
+### Route to a department: registry | human_resources | finance | procurement | legal | director
+POST {{base}}/documents/1/route
+Content-Type: application/json
+
+{"department": "finance", "reason": "Finance pays invoices"}
+
+### Audit log for one document (omit doc_id for everything)
+GET {{base}}/audit?doc_id=1
+
+### Invalid category -> 422 listing allowed values
+PUT {{base}}/documents/1/category
+Content-Type: application/json
+
+{"category": "sport"}
+
+### Unknown document -> 404
+GET {{base}}/documents/9999
