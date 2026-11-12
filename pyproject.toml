@@ -41,7 +41,9 @@ extend-exclude = ["docs/reference"]
 select = ["E", "F", "W", "I", "B", "UP"]
 
 [tool.pytest.ini_options]
-testpaths = ["mini_edrms/tests", "exercises"]
+# Weekly exercise tests (exercises/week-*/tests) fail until a trainee finishes the starter,
+# so they run only via `make check WEEK=<N>`. The shared helper's tests always run.
+testpaths = ["mini_edrms/tests", "exercises/common/tests"]
 filterwarnings = [
     # Starlette >=1.x nudges TestClient users to `httpx2`; we stay on `httpx`; revisit when upgrading Starlette.
     "ignore:Using `httpx` with `starlette.testclient` is deprecated",
