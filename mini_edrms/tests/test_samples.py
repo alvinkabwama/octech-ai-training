@@ -90,11 +90,39 @@ def test_sidecars_match_generator_source() -> None:
         assert _text(sample.stem) == sample.text
 
 
+def _decoded(png: Path) -> tuple[tuple[int, int], bytes]:
+    with Image.open(png) as image:
+        rgb = image.convert("RGB")
+        return rgb.size, rgb.tobytes()
+
+
+def _assert_matches_committed(build_dir: Path) -> None:
+    """Fresh build in ``build_dir`` must match the committed samples.
+
+    PNGs are compared by decoded pixels (compressed bytes vary across zlib/Pillow
+    builds); sidecar .txt files and labels.csv must match byte for byte.
+    """
+    for sample in build_samples.SAMPLES:
+        name = f"{sample.stem}.png"
+        assert _decoded(build_dir / name) == _decoded(SAMPLES_DIR / name), sample.stem
+        fresh_text = (build_dir / f"{sample.stem}.txt").read_bytes()
+        assert fresh_text == (SAMPLES_DIR / f"{sample.stem}.txt").read_bytes(), sample.stem
+    assert (build_dir / "labels.csv").read_bytes() == (SAMPLES_DIR / "labels.csv").read_bytes()
+
+
 def test_build_is_reproducible(tmp_path: Path) -> None:
     build_samples.build(tmp_path)
 
+    _assert_matches_committed(tmp_path)
+
+
+def test_reproducibility_ignores_png_encoding(tmp_path: Path) -> None:
+    """Another zlib/Pillow build compresses differently; only the pixels must match."""
+    build_samples.build(tmp_path)
     for sample in build_samples.SAMPLES:
-        for suffix in (".png", ".txt"):
-            fresh = (tmp_path / f"{sample.stem}{suffix}").read_bytes()
-            assert fresh == (SAMPLES_DIR / f"{sample.stem}{suffix}").read_bytes(), sample.stem
-    assert (tmp_path / "labels.csv").read_bytes() == (SAMPLES_DIR / "labels.csv").read_bytes()
+        png = tmp_path / f"{sample.stem}.png"
+        with Image.open(png) as image:
+            image.load()
+            image.save(png, format="PNG", compress_level=1)
+
+    _assert_matches_committed(tmp_path)
