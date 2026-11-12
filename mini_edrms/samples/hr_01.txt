@@ -3,4 +3,4 @@ Date: 2 February 2026
 To: The Human Resources Manager
 Subject: Application for annual leave
 I apply for 14 days of annual leave from 2 to 20 March 2026.
-Name: Joan Samplewell. NIN: CM00FAKE0001XX. Staff No: EX-4410.
+Name: Joan Samplewell. NIN: CM-FAKE-4827-KX. Staff No: EX-4410.

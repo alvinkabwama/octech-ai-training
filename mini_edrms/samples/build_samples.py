@@ -1,7 +1,9 @@
 """Generate the synthetic mini-EDRMS sample documents.
 
 Every name, organisation, reference and NIN-style ID below is invented. NIN-style
-IDs follow ``CM00FAKE####XX`` so they can never match a real national ID.
+IDs follow ``CM-FAKE-<4 digits 2-9>-<2 letters, no O/I/L>`` (e.g. ``CM-FAKE-4827-KX``):
+they can never match a real national ID, and avoid 0/O and 1/I/l so real OCR reads
+them exactly.
 
 Run with ``make samples`` (or ``python mini_edrms/samples/build_samples.py``).
 Writes, next to this file: ``<stem>.png`` + ``<stem>.txt`` per sample and ``labels.csv``.
@@ -102,7 +104,7 @@ SAMPLES: tuple[Sample, ...] = (
             "To: The Human Resources Manager",
             "Subject: Application for annual leave",
             "I apply for 14 days of annual leave from 2 to 20 March 2026.",
-            "Name: Joan Samplewell. NIN: CM00FAKE0001XX. Staff No: EX-4410.",
+            "Name: Joan Samplewell. NIN: CM-FAKE-4827-KX. Staff No: EX-4410.",
         ),
     ),
     Sample(
@@ -115,7 +117,7 @@ SAMPLES: tuple[Sample, ...] = (
             "To: The Human Resources Manager",
             "Subject: Letter of resignation",
             "I resign from my position as Accounts Assistant with effect from 6 March 2026.",
-            "Name: David Mockridge. NIN: CM00FAKE0002XX.",
+            "Name: David Mockridge. NIN: CM-FAKE-3956-RT.",
         ),
     ),
     Sample(
@@ -128,7 +130,7 @@ SAMPLES: tuple[Sample, ...] = (
             "To: The Human Resources Manager",
             "Subject: Job application - Records Assistant",
             "I wish to apply for the advertised post of Records Assistant.",
-            "Name: Esther Exampleton. NIN: CM00FAKE0003XX. CV attached.",
+            "Name: Esther Exampleton. NIN: CM-FAKE-7243-WP. CV attached.",
         ),
     ),
     Sample(
@@ -141,7 +143,7 @@ SAMPLES: tuple[Sample, ...] = (
             "To: The Human Resources Manager",
             "Subject: Sick leave notification",
             "Please record 5 days of sick leave from 16 to 20 February 2026.",
-            "Name: Isaac Dummyfield. NIN: CM00FAKE0004XX. Medical note attached.",
+            "Name: Isaac Dummyfield. NIN: CM-FAKE-5689-BH. Medical note attached.",
         ),
     ),
     # --- finance --------------------------------------------------------------
@@ -193,7 +195,7 @@ SAMPLES: tuple[Sample, ...] = (
             "To: The Finance Manager",
             "Subject: Request for staff travel advance",
             "I request a travel advance of UGX 600,000 for a field audit in Example District.",
-            "Name: Paul Specimen. NIN: CM00FAKE0005XX.",
+            "Name: Paul Specimen. NIN: CM-FAKE-2374-MZ.",
         ),
     ),
     # --- procurement ----------------------------------------------------------
@@ -259,7 +261,7 @@ SAMPLES: tuple[Sample, ...] = (
             "To: The Legal Officer",
             "Subject: Draft tenancy agreement for review",
             "Attached is the draft lease for the Example Street storage unit for review.",
-            "Landlord: Rose Inventa. NIN: CM00FAKE0006XX.",
+            "Landlord: Rose Inventa. NIN: CM-FAKE-8532-DN.",
         ),
     ),
     Sample(
@@ -285,7 +287,7 @@ SAMPLES: tuple[Sample, ...] = (
             "To: The Legal Officer",
             "Subject: Signed non-disclosure agreement",
             "Please find the signed NDA with Example Data Services Ltd for filing.",
-            "Signed by: Agnes Fabricate. NIN: CM00FAKE0007XX.",
+            "Signed by: Agnes Fabricate. NIN: CM-FAKE-6495-GU.",
         ),
     ),
     Sample(
@@ -320,9 +322,18 @@ SAMPLES: tuple[Sample, ...] = (
 )
 
 
+def wrap_lines(text: str) -> list[str]:
+    """Wrap each line to WRAP_CHARS without breaking on hyphens, so IDs stay whole."""
+    return [
+        wrapped
+        for line in text.splitlines()
+        for wrapped in textwrap.wrap(line, WRAP_CHARS, break_on_hyphens=False)
+    ]
+
+
 def render_png(text: str, path: Path) -> None:
     """Render ``text`` as black-on-white, IMAGE_WIDTH px wide, with the bundled font."""
-    lines = [wrapped for line in text.splitlines() for wrapped in textwrap.wrap(line, WRAP_CHARS)]
+    lines = wrap_lines(text)
     height = 2 * MARGIN + LINE_HEIGHT * len(lines)
     image = Image.new("RGB", (IMAGE_WIDTH, height), "white")
     draw = ImageDraw.Draw(image)

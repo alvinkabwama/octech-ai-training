@@ -5,7 +5,7 @@ a small practice records system with no AI in it. Over the programme you add AI 
 summarise and classify (week 4), tool calling (week 5) and an intake agent (week 6).
 
 All sample data is synthetic: invented names, invented organisations and fake
-NIN-style IDs (`CM00FAKE####XX`). Never add real client data to this repo.
+NIN-style IDs (`CM-FAKE-4827-KX` style). Never add real client data to this repo.
 
 ## Setup
 
@@ -40,6 +40,8 @@ holding the same text, and the app falls back to that automatically.
   folder to `PATH`
 - macOS: `brew install tesseract`
 - Debian/Ubuntu: `sudo apt install tesseract-ocr`
+
+Without Tesseract, an uploaded image whose filename matches a bundled sample (e.g. `finance_01.png`) gets that sample's sidecar text; any other image returns 503.
 
 ## Commands
 
