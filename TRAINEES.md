@@ -18,7 +18,7 @@ trainee/simon
 1. Accept the GitHub invitation to the repo.
 2. Clone it and set it up:
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/alvinkabwama/octech-ai-training.git
    cd octech-ai-training
    make setup          # PowerShell: see README "Windows PowerShell"
    cp .env.example .env   # then paste your OpenRouter key into .env
@@ -48,9 +48,17 @@ trainee/simon
    Commit often with clear messages (`feat: add memory to chatbot`).
 4. **Check it** before you hand in:
    ```bash
-   make test
-   make ci
+   make check WEEK=<N>   # this week's exercise tests (they fail until your work is done)
+   make ci               # lint, format check and the main test suite
+   make live WEEK=<N>    # run your code against real OpenRouter models
    ```
+   Windows PowerShell (no `make`):
+   ```powershell
+   .venv\Scripts\python scripts\run_week.py check <N>
+   .venv\Scripts\python -m ruff check . ; .venv\Scripts\python -m ruff format --check . ; .venv\Scripts\python -m pytest
+   .venv\Scripts\python scripts\run_week.py live <N>
+   ```
+   `make check` never calls a model, so it never uses your free OpenRouter requests.
 5. **Push** your week branch:
    ```bash
    git push -u origin trainee/<your-name>-week-<N>
@@ -75,7 +83,7 @@ trainee/simon
 
 ## How you're assessed each week
 
-1. The week's tests pass (`make test`).
+1. The week's tests pass (`make check WEEK=<N>`) and `make ci` is clean.
 2. Every item in the week's "Show your work" checkpoint is done.
 3. The trainer approves your PR after review.
 4. Weeks 6-8: a short live demo.

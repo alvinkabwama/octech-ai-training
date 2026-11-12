@@ -48,13 +48,19 @@ Without Tesseract, an uploaded image whose filename matches a bundled sample (e.
 
 ## Commands
 
-| Command        | What it does                                           |
-|----------------|--------------------------------------------------------|
-| `make run`     | Start the mini-EDRMS API on <http://127.0.0.1:8000>    |
-| `make test`    | Run the tests (never calls a model)                    |
-| `make fix`     | Format and auto-fix lint issues (ruff)                 |
-| `make ci`      | Lint, format check and tests: what CI runs             |
-| `make samples` | Regenerate the synthetic sample documents              |
+| Command | What it does | PowerShell equivalent |
+|---|---|---|
+| `make run` | Start the mini-EDRMS API on <http://127.0.0.1:8000> | `.venv\Scripts\python -m uvicorn mini_edrms.app.main:app --reload` |
+| `make test` | Main tests: mini-EDRMS + shared helper (never calls a model) | `.venv\Scripts\python -m pytest` |
+| `make check WEEK=<N>` | One week's exercise tests. They fail until the exercise is done; no model calls | `.venv\Scripts\python scripts\run_week.py check <N>` |
+| `make live WEEK=<N>` | Run that week's `starter/live.py` against real OpenRouter (needs `OPENROUTER_API_KEY` in `.env`) | `.venv\Scripts\python scripts\run_week.py live <N>` |
+| `make fix` | Format and auto-fix lint issues (ruff) | `.venv\Scripts\python -m ruff format . ; .venv\Scripts\python -m ruff check --fix .` |
+| `make ci` | Lint, format check and main tests | `.venv\Scripts\python -m ruff check . ; .venv\Scripts\python -m ruff format --check . ; .venv\Scripts\python -m pytest` |
+| `make samples` | Regenerate the synthetic sample documents | `.venv\Scripts\python mini_edrms\samples\build_samples.py` |
+
+Weekly exercises live in `exercises/week-<N>-<topic>/` (each has a `LESSON.md`). Their
+tests are left out of `make test` / `make ci` on purpose, because they fail until a
+trainee finishes the starter code.
 
 Interactive API docs: <http://127.0.0.1:8000/docs> once the server is running.
 Data (SQLite database and uploaded files) goes in `./data/`, or in
