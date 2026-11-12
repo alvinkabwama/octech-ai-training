@@ -1,0 +1,5 @@
+LOCAL PURCHASE ORDER No: LPO-EX-0332
+Date: 20 May 2026
+To: Sunrise Example Stationers Ltd
+Supply: A4 paper, 40 reams. Total: UGX 960,000.
+Deliver to the Registry store. Authorised by: Procurement Officer.

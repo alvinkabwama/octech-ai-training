@@ -1,0 +1,5 @@
+# Sample sidecars and labels must stay byte-identical across OSes (tests compare bytes).
+mini_edrms/samples/*.txt text eol=lf
+mini_edrms/samples/*.csv text eol=lf
+*.png binary
+Makefile text eol=lf

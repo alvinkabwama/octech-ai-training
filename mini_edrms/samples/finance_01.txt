@@ -1,0 +1,6 @@
+INVOICE No: INV-EX-0451
+Date: 4 April 2026
+From: Sunrise Example Stationers Ltd
+To: The Accounts Office
+Item: Printer toner cartridges x 10. Amount due: UGX 1,250,000.
+Payment due within 30 days.

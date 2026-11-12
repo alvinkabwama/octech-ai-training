@@ -1,0 +1,5 @@
+PAYMENT RECEIPT No: RC-EX-2290
+Date: 7 April 2026
+Received from: Hilltop Example Clinic
+Amount: UGX 480,000 for records storage services, March 2026.
+Received by: Moses Testcase, Cashier.
