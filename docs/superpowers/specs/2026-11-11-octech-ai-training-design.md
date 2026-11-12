@@ -128,3 +128,54 @@ octech-ai-training/
 - Running the production chatbot for participants.
 - Any real EDRMS code or client data.
 - Hosting/deploying the training repo.
+
+## 10. Amendments (2026-11-11, agreed after the first draft)
+
+### 10.1 Model provider
+OpenRouter is the only LLM provider in every lesson and exercise. All model calls go
+through one shared helper (`exercises/common/llm.py`: key from `.env`, fallback model
+list, retry on 429). Embeddings use a free local model, never OpenRouter.
+
+### 10.2 Lessons live in this repo
+Each week has `exercises/week-N-<topic>/LESSON.md` in the chatbot's module format:
+What you'll learn, Concepts, Code walkthrough, Assignment (homework), Show your work
+(checkpoint), Stretch, and a short "How the real chatbot does this" box. Lessons are
+adapted from `agentic-client-service-bot/docs/learning`, rewritten for OpenRouter and
+the mini-EDRMS, with all HFB/client content removed. The originals are not modified.
+A week 0 lesson covers git and the branch workflow.
+
+| Week | Core lessons (source modules) | Optional deep dive |
+|---|---|---|
+| 0 | Git and branch workflow (new), setup (00) | - |
+| 1 | Calling a model via OpenRouter (new), agents vs pipelines (01) | - |
+| 2 | Sessions and memory (11), streaming (14) | Frontend (17) |
+| 3 | RAG, chunking, embeddings, hybrid retrieval, reranking (02-06) | - |
+| 4 | Intent classification (08), composition and groundedness (10) on mini-EDRMS | Language detection (07), query rewriting (09) |
+| 5 | Tool calling (new) | Escalation and OTP (12) |
+| 6 | Agents: intake agent with human review (new) | Caching (13), MAF |
+| 7 | Testing (16), observability (15), prompt injection (ADR 0042) | - |
+| 8 | Demo day | Deployment (18) |
+
+### 10.3 Simplified mini-bot (not a copy of the production chatbot)
+Trainees build a plain-Python mini-bot (~100 lines, no Microsoft Agent Framework):
+`classify(question)`, `retrieve(question)` (Chroma + local embeddings) and
+`answer(question, chunks)` with an "I don't know" path. Language detection,
+reranking, query rewriting, caching and OTP are described in the "How the real
+chatbot does this" boxes, not built. MAF is an optional week 6 stretch.
+
+### 10.4 Trainee workflow and assessment
+- One repo. `main` is trainer-only. Each trainee has a long-lived branch
+  `trainee/<name>` (rachel, tracy, owen, simon), created by the trainer from `main`.
+- Each week: merge `origin/main` into `trainee/<name>`, branch
+  `trainee/<name>-week-<N>` (git cannot hold both `trainee/x` and `trainee/x/...`),
+  open a PR with **base `trainee/<name>`**, never `main`. The trainer reviews and
+  merges into the trainee's branch. Nothing is ever merged into `main` from a trainee.
+- `make setup` sets `core.hooksPath scripts/hooks`; the `pre-push` hook blocks pushes
+  to `main` (trainer override `ALLOW_MAIN_PUSH=1`). Accident prevention only: free
+  private GitHub repos cannot protect branches.
+- PR template carries the week's checkpoint list. Assessment per week: tests pass,
+  checkpoint done, PR approved; weeks 6-8 add a live demo. Scores go in the
+  skills-gap sheet.
+- Checks run locally (`make ci`), not in GitHub Actions, to save Actions minutes.
+- Reference solutions stay on the trainer's machine only, never in the shared repo.
+- Full trainee instructions: `TRAINEES.md`.

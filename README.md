@@ -1,5 +1,7 @@
 # Octech AI training
 
+> **Trainees:** read [TRAINEES.md](TRAINEES.md) first. It explains your branch and how to hand in work.
+
 Practice repo for the Octech AI training programme. It contains the **mini-EDRMS**,
 a small practice records system with no AI in it. Over the programme you add AI to it:
 summarise and classify (week 4), tool calling (week 5) and an intake agent (week 6).
@@ -24,6 +26,7 @@ cp .env.example .env     # add your OpenRouter key (used from week 1)
 python -m venv .venv
 .venv\Scripts\python -m pip install --upgrade pip
 .venv\Scripts\python -m pip install -e ".[dev]"
+git config core.hooksPath scripts/hooks
 Copy-Item .env.example .env
 ```
 
