@@ -79,7 +79,7 @@ def extract_text(
         if text is None:
             raise OcrUnavailable(f"Cannot extract text from {doc.filename}. {INSTALL_HINT}")
 
-    status = "ocr_done" if doc.status == "uploaded" else doc.status
+    status = documents.advance_status(doc.status, "ocr_done")
     conn.execute("UPDATE documents SET text = ?, status = ? WHERE id = ?", (text, status, doc_id))
     audit.record(conn, doc_id, "ocr", actor, f"Extracted {len(text)} chars via {method}")
     return text

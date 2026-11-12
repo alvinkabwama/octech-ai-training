@@ -30,6 +30,11 @@ class Document:
     status: str
 
 
+def advance_status(current: str, target: str) -> str:
+    """Return the later of two statuses, so a status never moves backwards."""
+    return max(current, target, key=STATUSES.index)
+
+
 def _row_to_document(row: sqlite3.Row) -> Document:
     return Document(**{key: row[key] for key in row.keys()})
 
