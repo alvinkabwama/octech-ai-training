@@ -29,10 +29,14 @@ CREATE INDEX IF NOT EXISTS idx_audit_doc_id ON audit (doc_id);
 def connect(path: Path | str) -> sqlite3.Connection:
     """Open a SQLite connection whose rows can be read by column name.
 
+    ``check_same_thread`` is off because FastAPI may run a request's dependency and
+    endpoint on different worker threads; each connection is still used by one
+    request at a time.
+
     Args:
         path: Database file path, or ``":memory:"`` for an in-memory database.
     """
-    connection = sqlite3.connect(str(path))
+    connection = sqlite3.connect(str(path), check_same_thread=False)
     connection.row_factory = sqlite3.Row
     return connection
 
