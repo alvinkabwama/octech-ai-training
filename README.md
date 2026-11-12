@@ -5,7 +5,7 @@ a small practice records system with no AI in it. Over the programme you add AI 
 summarise and classify (week 4), tool calling (week 5) and an intake agent (week 6).
 
 All sample data is synthetic: invented names, invented organisations and fake
-NIN-style IDs (`CM-FAKE-4827-KX` style). Never add real client data to this repo.
+NIN-style IDs (`CM-FAKE-4827-KR` style). Never add real client data to this repo.
 
 ## Setup
 

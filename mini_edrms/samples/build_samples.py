@@ -1,9 +1,9 @@
 """Generate the synthetic mini-EDRMS sample documents.
 
 Every name, organisation, reference and NIN-style ID below is invented. NIN-style
-IDs follow ``CM-FAKE-<4 digits 2-9>-<2 letters, no O/I/L>`` (e.g. ``CM-FAKE-4827-KX``):
-they can never match a real national ID, and avoid 0/O and 1/I/l so real OCR reads
-them exactly.
+IDs follow ``CM-FAKE-<4 digits 2-9>-<2 letters from ABDEFGHJKMNPQRTUWYZ>`` (e.g.
+``CM-FAKE-4827-KR``): they can never match a real national ID, and they avoid 0/O,
+1/I/l and the case-ambiguous C, S, V, X so real OCR reads them exactly.
 
 Run with ``make samples`` (or ``python mini_edrms/samples/build_samples.py``).
 Writes, next to this file: ``<stem>.png`` + ``<stem>.txt`` per sample and ``labels.csv``.
@@ -104,7 +104,7 @@ SAMPLES: tuple[Sample, ...] = (
             "To: The Human Resources Manager",
             "Subject: Application for annual leave",
             "I apply for 14 days of annual leave from 2 to 20 March 2026.",
-            "Name: Joan Samplewell. NIN: CM-FAKE-4827-KX. Staff No: EX-4410.",
+            "Name: Joan Samplewell. NIN: CM-FAKE-4827-KR. Staff No: EX-4410.",
         ),
     ),
     Sample(
