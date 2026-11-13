@@ -165,7 +165,7 @@ chatbot does this" boxes, not built. MAF is an optional week 6 stretch.
 
 ### 10.4 Trainee workflow and assessment
 - One repo. `main` is trainer-only. Each trainee has a long-lived branch
-  `trainee/<name>` (rachel, tracy, owen, simon), created by the trainer from `main`.
+  `trainee/<name>` (rachel, tracy, owen, john-simon, simon-abaho), created by the trainer from `main`.
 - Each week: merge `origin/main` into `trainee/<name>`, branch
   `trainee/<name>-week-<N>` (git cannot hold both `trainee/x` and `trainee/x/...`),
   open a PR with **base `trainee/<name>`**, never `main`. The trainer reviews and

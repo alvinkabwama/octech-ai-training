@@ -10,7 +10,8 @@ trainee/rachel             <- Rachel's approved work
 trainee/rachel-week-1      <- where Rachel does week 1 (deleted after merge)
 trainee/tracy
 trainee/owen
-trainee/simon
+trainee/john-simon
+trainee/simon-abaho
 ```
 
 ## Day 1 (once)
