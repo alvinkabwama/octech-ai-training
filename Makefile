@@ -16,7 +16,6 @@ setup:
 	$(PYTHON) -m venv .venv
 	$(PY) -m pip install --upgrade pip
 	$(PY) -m pip install -e ".[dev]"
-	git config core.hooksPath scripts/hooks
 
 run:
 	$(PY) -m uvicorn mini_edrms.app.main:app --reload

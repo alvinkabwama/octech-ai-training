@@ -8,7 +8,7 @@ week depends on this going smoothly, so take your time.
 
 - What a git branch is, and how this repo uses branches so four people can work
   without stepping on each other.
-- Why `main` is off limits to you, and what the pre-push hook does about it.
+- Why `main` is off limits to you, and how to check your branch before you push.
 - How to set up the repo on Windows (PowerShell) and on macOS/Linux.
 - How to get a free OpenRouter API key and keep it safe.
 - How to open a pull request into **your own branch**, never into `main`.
@@ -51,19 +51,11 @@ Each week you:
 > like file paths, so it can't have both a branch `trainee/amina` and a "folder"
 > `trainee/amina/...`. A dash avoids the clash.
 
-### Why there's a pre-push hook
+### Never push to `main`
 
-GitHub's free private repos can't lock `main`, so `make setup` installs a small git
-hook (`scripts/hooks/pre-push`). It runs before every `git push` and refuses any push
-to `main`:
-
-```
-Blocked: you can't push to main. Push your own branch instead:
-  git push -u origin trainee/<your-name>-week-<N>
-```
-
-It only prevents accidents. If you see that message, you were on the wrong branch:
-`git checkout trainee/<your-name>-week-<N>` and push again.
+Never push to main. Nothing technically stops you, so check your branch with
+`git branch --show-current` before every push. If you push to main by mistake, tell
+the trainer straight away. Don't try to fix it yourself.
 
 ### OpenRouter: one key, many models
 
@@ -93,7 +85,7 @@ Two rules that never bend:
 ```bash
 git clone https://github.com/alvinkabwama/octech-ai-training.git
 cd octech-ai-training
-make setup                 # creates .venv, installs everything, installs the pre-push hook
+make setup                 # creates .venv and installs everything
 cp .env.example .env       # then open .env and paste your key after OPENROUTER_API_KEY=
 git checkout trainee/<your-name>
 ```
@@ -106,7 +98,6 @@ cd octech-ai-training
 python -m venv .venv
 .venv\Scripts\python -m pip install --upgrade pip
 .venv\Scripts\python -m pip install -e ".[dev]"
-git config core.hooksPath scripts/hooks
 Copy-Item .env.example .env
 git checkout trainee/<your-name>
 ```
@@ -213,8 +204,6 @@ Copy this list into your PR description and tick each item:
 
 - Run `git log --oneline --graph --all` and find your week branch, your trainee branch
   and `main` in the picture.
-- Try to push to `main` on purpose (`git push origin HEAD:main`) and read the hook's
-  message. Nothing reaches GitHub.
 - Change `OPENROUTER_MODEL` in `.env` to `google/gemma-4-31b-it:free`, run
   `make live WEEK=0` again, and compare the greeting.
 

@@ -28,8 +28,6 @@ trainee/simon
    git checkout trainee/<your-name>
    ```
 
-`make setup` also installs a safety hook that stops you pushing to `main` by accident.
-
 ## Every week
 
 1. **Get the new week from `main`** into your branch:
@@ -75,7 +73,10 @@ trainee/simon
 
 ## Rules
 
-- Never open a PR into `main`. Never push to `main`.
+- Never open a PR into `main`.
+- Never push to main. Nothing technically stops you, so check your branch with
+  `git branch --show-current` before every push. If you push to main by mistake, tell
+  the trainer straight away. Don't try to fix it yourself.
 - Never commit `.env`, API keys or real client data. Samples are synthetic only.
 - Don't copy another person's branch. Reading their merged PRs to learn is fine.
 - Stuck for more than 30 minutes? Push what you have, open the PR as a **draft**, and

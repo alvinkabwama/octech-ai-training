@@ -170,9 +170,8 @@ chatbot does this" boxes, not built. MAF is an optional week 6 stretch.
   `trainee/<name>-week-<N>` (git cannot hold both `trainee/x` and `trainee/x/...`),
   open a PR with **base `trainee/<name>`**, never `main`. The trainer reviews and
   merges into the trainee's branch. Nothing is ever merged into `main` from a trainee.
-- `make setup` sets `core.hooksPath scripts/hooks`; the `pre-push` hook blocks pushes
-  to `main` (trainer override `ALLOW_MAIN_PUSH=1`). Accident prevention only: free
-  private GitHub repos cannot protect branches.
+- No technical guard on main (free private repo); the rule is enforced by the trainer
+  reviewing main's history.
 - PR template carries the week's checkpoint list. Assessment per week: tests pass,
   checkpoint done, PR approved; weeks 6-8 add a live demo. Scores go in the
   skills-gap sheet.

@@ -26,7 +26,6 @@ cp .env.example .env     # add your OpenRouter key (used from week 1)
 python -m venv .venv
 .venv\Scripts\python -m pip install --upgrade pip
 .venv\Scripts\python -m pip install -e ".[dev]"
-git config core.hooksPath scripts/hooks
 Copy-Item .env.example .env
 ```
 
