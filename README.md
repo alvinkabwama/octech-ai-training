@@ -13,16 +13,6 @@ NIN-style IDs (`CM-FAKE-4827-KR` style). Never add real client data to this repo
 
 Requires **Python 3.10+** and git.
 
-### macOS / Linux, or Windows with `make` installed
-
-```bash
-make setup               # creates .venv and installs the project + dev tools
-cp .env.example .env     # add your OpenRouter key (first used in week 0)
-```
-
-On Windows the Makefile uses `python` automatically (elsewhere `python3`); override
-with `make setup PYTHON=<path-to-python>` if needed.
-
 ### Installing make (optional)
 
 `make` is optional. Every `make` command has a PowerShell equivalent (listed below and
@@ -33,6 +23,16 @@ in the Commands table), so Windows users can skip installing it.
 - Ubuntu/Debian: `sudo apt install make`
 
 Check it worked with `make --version`.
+
+### macOS / Linux, or Windows with `make` installed
+
+```bash
+make setup               # creates .venv and installs the project + dev tools
+cp .env.example .env     # add your OpenRouter key (first used in week 0)
+```
+
+On Windows the Makefile uses `python` automatically (elsewhere `python3`); override
+with `make setup PYTHON=<path-to-python>` if needed.
 
 ### Windows PowerShell (no `make`)
 
@@ -157,6 +157,7 @@ mini_edrms/tests/     tests
 scripts/run_week.py   runs a week's tests (check) or live script (live)
 scripts/demo.py       end-to-end demo against a running server
 docs/reference/       OpenRouter getting-started guide
+docs/slides/          session decks (PDF), e.g. the kick-off
 docs/superpowers/     programme design spec and build plans
 .github/              pull request template
 ```

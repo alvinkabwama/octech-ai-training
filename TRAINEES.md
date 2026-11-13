@@ -17,7 +17,14 @@ trainee/simon-abaho
 ## Day 1 (once)
 
 1. Accept the GitHub invitation to the repo.
-2. Clone it and set it up:
+2. **Optional: install `make`.** It's optional. Every `make` command has a PowerShell
+   equivalent (see README), so Windows users can skip installing it.
+   - Windows: `winget install ezwinports.make`, then close and reopen the terminal
+   - macOS: `xcode-select --install`
+   - Ubuntu/Debian: `sudo apt install make`
+
+   Check it worked with `make --version`.
+3. Clone the repo and set it up:
    ```bash
    git clone https://github.com/alvinkabwama/octech-ai-training.git
    cd octech-ai-training
@@ -26,21 +33,10 @@ trainee/simon-abaho
    ```
    No key yet? The week 0 lesson (`exercises/week-0-git-and-setup/LESSON.md`, step 2)
    shows how to get a free one.
-3. Switch to your branch (it already exists):
+4. Switch to your branch (it already exists):
    ```bash
    git checkout trainee/<your-name>
    ```
-
-### Installing make (optional)
-
-`make` is optional. Every `make` command has a PowerShell equivalent (see README), so
-Windows users can skip installing it.
-
-- Windows: `winget install ezwinports.make`, then close and reopen the terminal
-- macOS: `xcode-select --install`
-- Ubuntu/Debian: `sudo apt install make`
-
-Check it worked with `make --version`.
 
 ## Every week
 

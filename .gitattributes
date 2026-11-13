@@ -3,3 +3,4 @@ mini_edrms/samples/*.txt text eol=lf
 mini_edrms/samples/*.csv text eol=lf
 *.png binary
 Makefile text eol=lf
+*.pdf binary
