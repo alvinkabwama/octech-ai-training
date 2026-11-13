@@ -13,12 +13,26 @@ NIN-style IDs (`CM-FAKE-4827-KR` style). Never add real client data to this repo
 
 Requires **Python 3.10+** and git.
 
-### macOS / Linux / Git Bash on Windows (with `make`)
+### macOS / Linux, or Windows with `make` installed
 
 ```bash
 make setup               # creates .venv and installs the project + dev tools
 cp .env.example .env     # add your OpenRouter key (used from week 1)
 ```
+
+On Windows the Makefile uses `python` automatically (elsewhere `python3`); override
+with `make setup PYTHON=<path-to-python>` if needed.
+
+### Installing make (optional)
+
+`make` is optional. Every `make` command has a PowerShell equivalent (listed below and
+in the Commands table), so Windows users can skip installing it.
+
+- Windows: `winget install ezwinports.make`, then close and reopen the terminal
+- macOS: `xcode-select --install`
+- Ubuntu/Debian: `sudo apt install make`
+
+Check it worked with `make --version`.
 
 ### Windows PowerShell (no `make`)
 

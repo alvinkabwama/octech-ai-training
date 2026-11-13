@@ -28,6 +28,17 @@ trainee/simon
    git checkout trainee/<your-name>
    ```
 
+### Installing make (optional)
+
+`make` is optional. Every `make` command has a PowerShell equivalent (see README), so
+Windows users can skip installing it.
+
+- Windows: `winget install ezwinports.make`, then close and reopen the terminal
+- macOS: `xcode-select --install`
+- Ubuntu/Debian: `sudo apt install make`
+
+Check it worked with `make --version`.
+
 ## Every week
 
 1. **Get the new week from `main`** into your branch:

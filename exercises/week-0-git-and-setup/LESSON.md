@@ -80,7 +80,7 @@ Two rules that never bend:
 
 ### 1. Set up the repo
 
-**macOS / Linux / Git Bash:**
+**macOS / Linux, or Windows with `make` installed:**
 
 ```bash
 git clone https://github.com/alvinkabwama/octech-ai-training.git
@@ -104,6 +104,15 @@ git checkout trainee/<your-name>
 
 Check it worked: `make test` (PowerShell: `.venv\Scripts\python -m pytest`) should end
 with `passed`.
+
+**Installing make (optional).** `make` is optional. Every `make` command has a
+PowerShell equivalent that's already listed, so Windows users can skip installing it.
+
+- Windows: `winget install ezwinports.make`, then close and reopen the terminal
+- macOS: `xcode-select --install`
+- Ubuntu/Debian: `sudo apt install make`
+
+Check it worked with `make --version`.
 
 ### 2. Get your OpenRouter key
 

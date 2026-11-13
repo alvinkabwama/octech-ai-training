@@ -1,8 +1,9 @@
 # Octech AI training - common commands.
-# Works on Linux, macOS and Git Bash on Windows.
+# Works on Linux, macOS and Windows (make is optional; see README "Installing make").
 
 ifeq ($(OS),Windows_NT)
 VENV_BIN := .venv/Scripts
+PYTHON ?= python
 else
 VENV_BIN := .venv/bin
 endif
@@ -38,10 +39,10 @@ samples:
 # One week's exercise tests (stubbed: never calls a model). Fails until you finish the TODOs.
 # Trainer: add STARTER=solutions/week-<N> to check a reference solution instead.
 check:
-	@test -n "$(WEEK)" || { echo "Usage: make check WEEK=<N>   e.g. make check WEEK=1"; exit 2; }
+	$(if $(WEEK),,$(error Usage: make check WEEK=<N>   e.g. make check WEEK=1))
 	$(PY) scripts/run_week.py check $(WEEK) $(if $(STARTER),--starter $(STARTER))
 
 # Run one week's starter/live.py against real OpenRouter (needs OPENROUTER_API_KEY in .env).
 live:
-	@test -n "$(WEEK)" || { echo "Usage: make live WEEK=<N>   e.g. make live WEEK=0"; exit 2; }
+	$(if $(WEEK),,$(error Usage: make live WEEK=<N>   e.g. make live WEEK=0))
 	$(PY) scripts/run_week.py live $(WEEK) $(if $(STARTER),--starter $(STARTER))
