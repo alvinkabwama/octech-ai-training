@@ -61,15 +61,18 @@ given product feature and why.
 ```
 octech-ai-training/
   README.md            setup, OpenRouter key, make commands
-  Makefile             setup / run / test / fix / ci
+  TRAINEES.md          branch workflow, weekly routine, rules
+  Makefile             setup / run / test / fix / ci / samples / check / live
   pyproject.toml
   .env.example         OPENROUTER_API_KEY, OPENROUTER_MODEL
-  exercises/weekN/     README (task + done-criteria), starter code, tests
+  exercises/common/    shared OpenRouter helper + test fake
+  exercises/week-N-<topic>/  LESSON.md, starter/, tests/
+  scripts/             run_week.py (check / live), demo.py
   mini_edrms/          practice app, no AI
     app/               main, db, documents, ocr, filing, routing, audit
     samples/           ~20 synthetic docs + labels.csv + poisoned letter
     tests/
-  docs/                learning path, ADR template, skills matrix, specs
+  docs/                reference (OpenRouter guide), specs and plans
 ```
 
 ### 5.1 mini-EDRMS
@@ -92,10 +95,9 @@ octech-ai-training/
 
 ### 5.2 Exercises
 
-- Each week: README (goal, steps, done-criteria, chatbot reading), starter file(s)
-  with TODOs, tests.
-- Tests check structure/behaviour with the model call stubbed, so `make test` never
-  spends OpenRouter requests. A separate `make live WEEK=n` runs against OpenRouter.
+- Each week: LESSON.md (format in 10.2), starter file(s) with TODOs, tests.
+- Tests check structure/behaviour with the model call stubbed, so `make check WEEK=n`
+  never spends OpenRouter requests. A separate `make live WEEK=n` runs against OpenRouter.
 - A reference solution per week is kept out of the participants' branch (folder
   `solutions/`, git-ignored on the training branch or kept by Alvin) and is run once
   live to prove each exercise is achievable on free models.

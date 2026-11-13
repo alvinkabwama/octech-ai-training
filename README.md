@@ -17,7 +17,7 @@ Requires **Python 3.10+** and git.
 
 ```bash
 make setup               # creates .venv and installs the project + dev tools
-cp .env.example .env     # add your OpenRouter key (used from week 1)
+cp .env.example .env     # add your OpenRouter key (first used in week 0)
 ```
 
 On Windows the Makefile uses `python` automatically (elsewhere `python3`); override
@@ -43,8 +43,7 @@ python -m venv .venv
 Copy-Item .env.example .env
 ```
 
-Each `make` target below is a single command; on PowerShell run it with
-`.venv\Scripts\python -m ...` (for example `.venv\Scripts\python -m pytest`).
+The Commands table below gives the PowerShell equivalent of every `make` target.
 
 ### Tesseract OCR (optional)
 
@@ -83,7 +82,7 @@ Data (SQLite database and uploaded files) goes in `./data/`, or in
 
 ```bash
 make run                       # terminal 1
-python scripts/demo.py         # terminal 2 (PowerShell: .venv\Scripts\python scripts\demo.py)
+.venv/bin/python scripts/demo.py   # terminal 2 (PowerShell: .venv\Scripts\python scripts\demo.py)
 ```
 
 The demo uploads three sample letters, extracts their text, files each one under a
@@ -149,9 +148,15 @@ as `reason`, so the audit log always shows what the agent did and why.
 ## Repository layout
 
 ```
+TRAINEES.md           how trainees work: branches, weekly routine, PRs, rules
+exercises/common/     shared OpenRouter helper (llm.py) and the fake model used in tests
+exercises/week-<N>-*/ LESSON.md, starter/ (your code) and tests/ for each week
 mini_edrms/app/       service functions + FastAPI app
 mini_edrms/samples/   synthetic documents, labels.csv, build_samples.py
 mini_edrms/tests/     tests
+scripts/run_week.py   runs a week's tests (check) or live script (live)
 scripts/demo.py       end-to-end demo against a running server
-docs/                 programme design and plans
+docs/reference/       OpenRouter getting-started guide
+docs/superpowers/     programme design spec and build plans
+.github/              pull request template
 ```

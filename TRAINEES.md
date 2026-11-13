@@ -24,6 +24,8 @@ trainee/simon-abaho
    make setup          # PowerShell: see README "Windows PowerShell"
    cp .env.example .env   # then paste your OpenRouter key into .env
    ```
+   No key yet? The week 0 lesson (`exercises/week-0-git-and-setup/LESSON.md`, step 2)
+   shows how to get a free one.
 3. Switch to your branch (it already exists):
    ```bash
    git checkout trainee/<your-name>
@@ -50,6 +52,8 @@ Check it worked with `make --version`.
    git merge origin/main         # brings in the new week's lesson and exercise
    git push
    ```
+   If the merge changed `pyproject.toml`, run `make setup` again (PowerShell:
+   `.venv\Scripts\python -m pip install -e ".[dev]"`) to install the new packages.
 2. **Start a week branch** from your branch:
    ```bash
    git checkout -b trainee/<your-name>-week-<N>

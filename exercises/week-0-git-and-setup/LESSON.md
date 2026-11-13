@@ -6,7 +6,7 @@ week depends on this going smoothly, so take your time.
 
 ## What you'll learn
 
-- What a git branch is, and how this repo uses branches so four people can work
+- What a git branch is, and how this repo uses branches so several people can work
   without stepping on each other.
 - Why `main` is off limits to you, and how to check your branch before you push.
 - How to set up the repo on Windows (PowerShell) and on macOS/Linux.
@@ -59,7 +59,7 @@ the trainer straight away. Don't try to fix it yourself.
 
 ### OpenRouter: one key, many models
 
-From week 1 you call AI models through **OpenRouter**, one API in front of hundreds of
+From this week on you call AI models through **OpenRouter**, one API in front of hundreds of
 models. Models whose ID ends in `:free` cost nothing. You need an OpenRouter key (free,
 no credit card), not an OpenAI or Google key.
 
