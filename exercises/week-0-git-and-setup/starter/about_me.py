@@ -4,12 +4,15 @@ Do this on your week branch (trainee/<your-name>-week-0), not on main.
 """
 
 # Your first name, e.g. "Amina".
-NAME = "TODO: your name"
+NAME = "Racheal"
 
 # The Octech product you work on most. Must be exactly one of:
 #   "EDRMS", "QMS", "CRM", "CMMCS", "QA tool", "chatbot", "voice", "other"
-PRODUCT_I_WORK_ON = "TODO: pick one from the list above"
+PRODUCT_I_WORK_ON = "QMS"
 
 # One sentence (at least 8 words): an AI feature you'd like to add to that product.
 # Example: "Suggest a file-plan category for every scanned letter when it is uploaded."
-AI_IDEA = "TODO: your idea"
+AI_IDEA = (
+    "Predict tomorrow's busiest hours per service and suggest staffing levels "
+    "to keep waits under the SLA target."
+)
