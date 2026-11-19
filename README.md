@@ -154,6 +154,7 @@ exercises/week-<N>-*/ LESSON.md, starter/ (your code) and tests/ for each week
 mini_edrms/app/       service functions + FastAPI app
 mini_edrms/samples/   synthetic documents, labels.csv, build_samples.py
 mini_edrms/tests/     tests
+solutions/week-<N>/   commented reference solution + ANSWERS.md, after the week's review
 scripts/run_week.py   runs a week's tests (check) or live script (live)
 scripts/demo.py       end-to-end demo against a running server
 docs/reference/       OpenRouter getting-started guide

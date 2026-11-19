@@ -4,8 +4,15 @@
 # Runtime data (sqlite db + uploaded files)
 data/
 
-# Reference solutions are kept off the participants' branch
-solutions/
+# Reference solutions: only released weeks are tracked (via PRs from the `solutions`
+# branch). A new week's solution stays local until its line is added here.
+solutions/*
+!solutions/README.md
+!solutions/week-0/
+!solutions/week-1/
+
+# Trainer-only notes (skills-gap scores, assessments). Never committed.
+trainer-notes/
 
 # Python
 .venv/

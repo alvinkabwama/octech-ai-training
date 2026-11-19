@@ -98,9 +98,10 @@ octech-ai-training/
 - Each week: LESSON.md (format in 10.2), starter file(s) with TODOs, tests.
 - Tests check structure/behaviour with the model call stubbed, so `make check WEEK=n`
   never spends OpenRouter requests. A separate `make live WEEK=n` runs against OpenRouter.
-- A reference solution per week is kept out of the participants' branch (folder
-  `solutions/`, git-ignored on the training branch or kept by Alvin) and is run once
-  live to prove each exercise is achievable on free models.
+- A reference solution per week lives in `solutions/week-<N>/` and is run once live to
+  prove each exercise is achievable on free models. It stays on the trainer's machine
+  (git-ignored) until that week's PRs are reviewed, then is published to `main` with
+  full code comments and an `ANSWERS.md` (amended 2026-11-19, see 10.4).
 - Shared helper `exercises/common/llm.py`: OpenRouter client, fallback model list,
   retry on 429.
 
@@ -178,5 +179,8 @@ chatbot does this" boxes, not built. MAF is an optional week 6 stretch.
   checkpoint done, PR approved; weeks 6-8 add a live demo. Scores go in the
   skills-gap sheet.
 - Checks run locally (`make ci`), not in GitHub Actions, to save Actions minutes.
-- Reference solutions stay on the trainer's machine only, never in the shared repo.
+- Reference solutions are published after each week's review (amended 2026-11-19):
+  written on the long-lived `solutions` branch and merged into `main` only by PR from
+  `solutions`. `.gitignore` tracks only released weeks, so unreleased solutions stay local.
+- Skills-gap scores are kept in `trainer-notes/` (git-ignored), never in the repo.
 - Full trainee instructions: `TRAINEES.md`.

@@ -82,6 +82,9 @@ trainee/simon-abaho
    week branch to answer comments; the PR updates itself.
 8. **Approved?** The trainer merges it into `trainee/<your-name>`. You can delete the
    week branch.
+9. **Compare with the reference solution.** After the week's reviews, the trainer adds a
+   commented solution and model answers to `solutions/week-<N>/` on `main`. Merge
+   `origin/main` (step 1) to get it, and compare it with your own work. Don't copy it.
 
 ## Rules
 
