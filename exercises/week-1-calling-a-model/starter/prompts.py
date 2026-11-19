@@ -11,6 +11,8 @@ Read LESSON.md first. The tests fake the model, so `make check` costs no free re
 
 from __future__ import annotations
 
+import json
+import re
 from typing import Any
 
 from exercises.common import llm  # noqa: F401  (you'll use llm.ask / llm.chat below)
@@ -20,43 +22,61 @@ URGENCY_LEVELS = ("low", "medium", "high")
 
 
 def explain(topic: str, audience: str) -> str:
-    """Explain ``topic`` so ``audience`` understands it, in 3 sentences or fewer.
-
-    TODO:
-      1. Write a system prompt that sets the tone (plain words, no jargon) and says
-         "answer in 3 sentences or fewer".
-      2. Put the topic and the audience in the user message.
-      3. Return the reply from llm.ask(...).
-    """
-    raise NotImplementedError("TODO: explain()")
+    """Explain ``topic`` so ``audience`` understands it, in 3 sentences or fewer."""
+    system = (
+        "You are a patient teacher. Use plain words and no jargon. Answer in 3 sentences or fewer."
+    )
+    user = f"Explain {topic} to {audience}."
+    return llm.ask(user, system=system)
 
 
 def classify(message: str) -> str:
-    """Return exactly one of CATEGORIES for a customer ``message``.
+    """Return exactly one of CATEGORIES for a customer ``message``."""
+    system = (
+        f"Classify the customer message into one of: {', '.join(CATEGORIES)}. "
+        "Reply with the category name only."
+    )
+    reply = llm.ask(message, system=system, temperature=0)
+    label = reply.strip().strip("\"'.").lower()
+    return label if label in CATEGORIES else "other"
 
-    TODO:
-      1. System prompt: list every category and say "reply with the category name only".
-      2. Call the model with temperature=0 (same input -> same answer).
-      3. Normalise the reply: strip spaces, quotes and full stops, lower-case it
-         ("Loan_Enquiry." -> "loan_enquiry").
-      4. If the result isn't in CATEGORIES, return "other". Never trust the model blindly.
-    """
-    raise NotImplementedError("TODO: classify()")
+
+def _parse_extraction(raw: str) -> dict[str, Any]:
+    """Turn a model reply into a checked dict, or raise ValueError."""
+    cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip())
+    data = json.loads(cleaned)  # JSONDecodeError is a ValueError
+    if not isinstance(data, dict):
+        raise ValueError("reply is not a JSON object")
+    result = {
+        "name": data.get("name"),
+        "phone": data.get("phone"),
+        "issue": data.get("issue"),
+        "urgency": data.get("urgency"),
+    }
+    if result["urgency"] not in URGENCY_LEVELS:
+        raise ValueError(f"bad urgency: {result['urgency']!r}")
+    return result
 
 
 def extract(text: str) -> dict[str, Any]:
-    """Pull customer details out of ``text`` as a dict.
-
-    Returns exactly these keys:
-        {"name": str | None, "phone": str | None, "issue": str,
-         "urgency": "low" | "medium" | "high"}
-
-    TODO:
-      1. System prompt: describe the JSON shape and say "reply with JSON only, no markdown".
-      2. Remove ```json ... ``` fences if the model adds them, then json.loads().
-      3. Keep only the four keys; check urgency is in URGENCY_LEVELS.
-      4. If parsing or checking fails, retry ONCE: send the conversation again plus a user
-         message reminding the model to reply with JSON only.
-      5. If the second reply is also bad, raise ValueError.
-    """
-    raise NotImplementedError("TODO: extract()")
+    """Pull customer details out of ``text`` as a dict."""
+    system = (
+        "Extract customer details from the text. Reply with JSON only, no markdown, "
+        'in exactly this shape: {"name": string or null, "phone": string or null, '
+        '"issue": short string, "urgency": "low" or "medium" or "high"}. '
+        "Use null when the name or phone is not given."
+    )
+    messages = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": text},
+    ]
+    raw = llm.chat(messages, temperature=0)
+    try:
+        return _parse_extraction(raw)
+    except ValueError:
+        # Show the model its bad reply and ask again, once.
+        messages += [
+            {"role": "assistant", "content": raw},
+            {"role": "user", "content": "Reply with the JSON object only."},
+        ]
+        return _parse_extraction(llm.chat(messages, temperature=0))  # raises if still bad
