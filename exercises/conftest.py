@@ -2,7 +2,9 @@
 
 Fixtures:
     fake_llm      A scripted FakeClient behind ``llm.get_client``. Queue replies with
-                  ``fake_llm.queue("reply", ...)``; inspect ``fake_llm.calls``.
+                  ``fake_llm.queue("reply", ...)``; queue streamed replies for
+                  ``llm.chat_stream`` with ``fake_llm.queue_stream(["Hel", "lo"])``;
+                  inspect ``fake_llm.calls``.
     load_starter  ``load_starter("prompts")`` imports ``<week>/starter/prompts.py``
                   (or the folder in EXERCISE_STARTER_DIR, used to check solutions).
 """

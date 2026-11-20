@@ -204,3 +204,84 @@ def test_get_client_reads_key_from_env_file(
         monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
 
     assert created[0]["api_key"] == "sk-or-v1-from-file"
+
+
+# --- chat_stream ----------------------------------------------------------------
+
+HI = [{"role": "user", "content": "Hi"}]
+
+
+def test_chat_stream_yields_pieces_with_fallbacks(fake: FakeClient) -> None:
+    fake.queue_stream(["Hel", "lo"])
+
+    pieces = list(llm.chat_stream(HI))
+
+    assert pieces == ["Hel", "lo"]
+    call = fake.calls[0]
+    assert call["stream"] is True
+    assert call["extra_body"] == {"models": llm.DEFAULT_MODELS}
+    assert call["messages"] == HI
+    assert call["temperature"] == 0.3
+
+
+def test_chat_stream_skips_empty_chunks(fake: FakeClient) -> None:
+    fake.queue_stream(["A", None, "", "B"])
+
+    assert list(llm.chat_stream(HI)) == ["A", "B"]
+
+
+def test_chat_stream_retries_429_before_first_piece(fake: FakeClient, sleeps: list[float]) -> None:
+    fake.queue(rate_limit_error())
+    fake.queue_stream(["ok"])
+
+    assert list(llm.chat_stream(HI)) == ["ok"]
+    assert len(fake.calls) == 2
+    assert sleeps == [5]
+
+
+def test_chat_stream_retries_429_raised_before_any_piece(
+    fake: FakeClient, sleeps: list[float]
+) -> None:
+    fake.queue_stream([rate_limit_error()], ["ok"])
+
+    assert list(llm.chat_stream(HI)) == ["ok"]
+    assert len(fake.calls) == 2
+    assert sleeps == [5]
+
+
+def test_chat_stream_does_not_retry_after_first_piece(
+    fake: FakeClient, sleeps: list[float]
+) -> None:
+    fake.queue_stream(["A", rate_limit_error()], ["never used"])
+    received: list[str] = []
+
+    with pytest.raises(llm.LLMError):
+        for piece in llm.chat_stream(HI):
+            received.append(piece)
+
+    assert received == ["A"], "text already shown must not be sent twice"
+    assert len(fake.calls) == 1
+    assert sleeps == []
+
+
+def test_chat_stream_gives_up_after_max_attempts(fake: FakeClient, sleeps: list[float]) -> None:
+    fake.queue(rate_limit_error(), rate_limit_error(), rate_limit_error())
+
+    with pytest.raises(llm.LLMError, match="(?i)rate limit"):
+        list(llm.chat_stream(HI))
+
+    assert len(fake.calls) == 3
+    assert sleeps == [5, 10]
+
+
+def test_chat_stream_empty_stream_raises(fake: FakeClient) -> None:
+    fake.queue_stream([])
+
+    with pytest.raises(llm.LLMError, match="(?i)empty"):
+        list(llm.chat_stream(HI))
+
+
+def test_chat_stream_sends_nothing_until_iterated(fake: FakeClient) -> None:
+    llm.chat_stream(HI)
+
+    assert fake.calls == []
