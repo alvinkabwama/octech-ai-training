@@ -29,6 +29,17 @@ def rate_limit_error() -> openai.RateLimitError:
     return openai.RateLimitError("Rate limit exceeded", response=response, body=None)
 
 
+def api_error(message: str = "Upstream provider error", code: int | None = None) -> openai.APIError:
+    """A plain APIError, like the SDK raises for an error event inside a stream.
+
+    OpenRouter reports failures after the HTTP 200 as ``{"error": {"code": ..., "message": ...}}``
+    in the stream; the SDK turns that into ``openai.APIError`` with ``body`` set to the error.
+    """
+    request = httpx.Request("POST", OPENROUTER_URL)
+    body = {"code": code, "message": message} if code is not None else None
+    return openai.APIError(message, request, body=body)
+
+
 class _Completions:
     def __init__(self, owner: FakeClient) -> None:
         self._owner = owner
@@ -46,10 +57,10 @@ class _Completions:
         if isinstance(reply, _StreamScript):
             if not streaming:
                 raise AssertionError("A streamed reply was queued, but the call lacks stream=True")
-            return _FakeStream(reply.pieces)
+            return self._owner._new_stream(reply.pieces)
         if streaming:
             # A plain reply asked for as a stream arrives as one piece.
-            return _FakeStream([reply])
+            return self._owner._new_stream([reply])
         message = SimpleNamespace(content=reply, role="assistant")
         return SimpleNamespace(
             choices=[SimpleNamespace(message=message)], model=kwargs.get("model")
@@ -92,11 +103,17 @@ class FakeClient:
     def __init__(self, replies: Iterable[str | None | BaseException] = ()) -> None:
         self.replies: list[str | None | BaseException | _StreamScript] = list(replies)
         self.calls: list[dict[str, Any]] = []
+        self.streams: list[_FakeStream] = []  # every stream handed out, to check .closed
         self.chat = SimpleNamespace(completions=_Completions(self))
 
     def queue(self, *replies: str | None | BaseException) -> None:
         """Add replies for the next calls, in order."""
         self.replies.extend(replies)
+
+    def _new_stream(self, pieces: list[str | None | BaseException]) -> _FakeStream:
+        stream = _FakeStream(pieces)
+        self.streams.append(stream)
+        return stream
 
     def queue_stream(self, *pieces_lists: Iterable[str | None | BaseException]) -> None:
         """Add streamed replies (one list of pieces per ``stream=True`` call), in order."""

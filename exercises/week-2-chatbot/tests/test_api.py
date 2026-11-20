@@ -16,15 +16,18 @@ from exercises.common.testing import FakeClient
 
 
 @pytest.fixture
-def client(
-    load_starter: Callable[[str], ModuleType], monkeypatch: pytest.MonkeyPatch
-) -> TestClient:
+def api(load_starter: Callable[[str], ModuleType], monkeypatch: pytest.MonkeyPatch) -> ModuleType:
     # api.py does `import chatbot`, as it would under `uvicorn --app-dir <starter folder>`.
     starter_dir = Path(str(load_starter("chatbot").__file__)).parent
     monkeypatch.syspath_prepend(str(starter_dir))
     monkeypatch.delitem(sys.modules, "chatbot", raising=False)
-    api = load_starter("api")
-    api.chatbot.SESSIONS.clear()
+    module = load_starter("api")
+    module.chatbot.SESSIONS.clear()
+    return module
+
+
+@pytest.fixture
+def client(api: ModuleType) -> TestClient:
     return TestClient(api.app)
 
 
@@ -66,6 +69,13 @@ def test_api_rejects_bad_body(
     assert client.post("/chat", json=body).status_code == 422
     assert client.post("/chat/stream", json=body).status_code == 422
     assert fake_llm.calls == []
+
+
+def test_rejected_message_leaves_no_session(api: ModuleType, client: TestClient) -> None:
+    """A bad message must be rejected before a session is created for it."""
+    assert client.post("/chat", json={"message": "   "}).status_code == 422
+    assert client.post("/chat/stream", json={"message": "   "}).status_code == 422
+    assert api.chatbot.SESSIONS == {}
 
 
 def test_stream_endpoint_streams_text_with_session_header(

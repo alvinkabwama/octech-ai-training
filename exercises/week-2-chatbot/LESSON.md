@@ -70,7 +70,8 @@ for piece in llm.chat_stream(messages):
 
 Two catches:
 
-- You only have the full reply **after** the stream ends. Save the turn then.
+- You only have the full reply **after** the stream ends. Save the turn then. If the
+  user closes the page mid-reply, the stream stops and nothing is saved.
 - Once a piece has been shown, you can't quietly retry. The helper only retries a
   rate-limit (429) that happens **before** the first piece arrives.
 
@@ -80,7 +81,8 @@ FastAPI turns Python functions into HTTP endpoints. Pydantic models describe the
 
 ```python
 class ChatRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")  # unknown fields -> 422
+    # extra="forbid": unknown fields -> 422; strip spaces so "   " fails min_length too
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     session_id: str | None = None
     message: str = Field(min_length=1, max_length=2000)
 
@@ -103,7 +105,7 @@ FastAPI runs plain `def` routes in a thread pool, so one slow reply doesn't free
   They waste requests.
 - **Never log or print what users type.** People paste phone numbers, IDs and complaints
   into chatbots. Logs are copied, kept and read by many people.
-- **Fail politely.** If the model call fails (rate limit, empty reply), answer
+- **Fail politely.** If the model call fails (rate limit, empty reply, provider error), answer
   "Sorry, I couldn't answer that just now…" instead of crashing, and **don't save** the
   failed turn, so the history stays consistent and the user can just ask again.
 

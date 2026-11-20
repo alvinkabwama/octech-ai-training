@@ -149,13 +149,15 @@ def chat_stream(
     once text has been shown, retrying would repeat it, so a later 429 raises instead.
 
     Raises:
-        LLMError: Still rate-limited after MAX_ATTEMPTS tries, rate-limited mid-reply, or
-            the stream ended without any text.
-        openai.APIError: Any other API failure (bad key, unknown model, ...).
+        LLMError: Still rate-limited after MAX_ATTEMPTS tries, rate-limited or failed
+            part-way through the reply, or the stream ended without any text.
+        openai.APIError: The request was refused before streaming started (bad key,
+            unknown model, ...), as with :func:`chat`.
     """
     models = fallback_models(model)
     for attempt in range(MAX_ATTEMPTS):
         received_any = False
+        stream_open = False
         try:
             stream = get_client().chat.completions.create(
                 model=models[0],
@@ -165,6 +167,7 @@ def chat_stream(
                 extra_body={"models": models},
                 **kwargs,
             )
+            stream_open = True
             try:
                 for chunk in stream:
                     piece = _chunk_text(chunk)
@@ -173,7 +176,14 @@ def chat_stream(
                         yield piece
             finally:
                 stream.close()  # also runs if the caller stops early
-        except openai.RateLimitError as error:
+        except openai.APIError as error:
+            rate_limited = _is_rate_limit(error)
+            if not stream_open and not rate_limited:
+                raise  # refused up front (bad key, unknown model): same as chat()
+            if not rate_limited:
+                # After HTTP 200, OpenRouter reports failures inside the stream; the SDK
+                # raises them as a plain APIError (also timeouts and dropped connections).
+                raise LLMError("The model failed part-way through the reply. Try again.") from error
             if received_any:
                 raise LLMError(
                     "OpenRouter rate limit hit part-way through the reply. Wait a minute "
@@ -189,6 +199,14 @@ def chat_stream(
         if not received_any:
             raise LLMError("The model returned an empty reply. Try again or use another model.")
         return
+
+
+def _is_rate_limit(error: openai.APIError) -> bool:
+    """A 429, either as the HTTP status or as an error event inside the stream."""
+    if isinstance(error, openai.RateLimitError):
+        return True
+    body = error.body
+    return isinstance(body, dict) and body.get("code") == 429
 
 
 def _chunk_text(chunk: Any) -> str | None:

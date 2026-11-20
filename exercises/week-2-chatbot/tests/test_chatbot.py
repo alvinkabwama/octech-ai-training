@@ -10,7 +10,7 @@ from types import ModuleType
 
 import pytest
 
-from exercises.common.testing import FakeClient, rate_limit_error
+from exercises.common.testing import FakeClient, api_error, rate_limit_error
 
 
 @pytest.fixture
@@ -160,6 +160,14 @@ def test_failed_model_call_returns_fallback_and_saves_nothing(
     ], "a failed turn must not be saved"
 
 
+def test_any_model_error_returns_fallback(bot: ModuleType, fake_llm: FakeClient) -> None:
+    """Not just rate limits: a provider error must not crash the chat either."""
+    session = bot.new_session()
+    fake_llm.queue(api_error("Upstream provider error"))
+
+    assert bot.reply(session, "Hello?") == bot.FALLBACK_REPLY
+
+
 # --- streaming -----------------------------------------------------------------------
 
 
@@ -181,6 +189,23 @@ def test_reply_stream_yields_pieces_and_saves_full_reply(
     ]
 
 
+def test_failed_stream_yields_fallback_and_saves_nothing(
+    bot: ModuleType, fake_llm: FakeClient
+) -> None:
+    session = bot.new_session()
+    fake_llm.queue_stream(["Half an ans", rate_limit_error()])
+    fake_llm.queue("ok")
+
+    pieces = list(bot.reply_stream(session, "Where is my file?"))
+    bot.reply(session, "Hello?")
+
+    assert pieces == ["Half an ans", bot.FALLBACK_REPLY]
+    assert fake_llm.last_messages == [
+        {"role": "system", "content": bot.SYSTEM_PROMPT},
+        {"role": "user", "content": "Hello?"},
+    ], "neither the question nor the half answer may be saved"
+
+
 def test_reply_stream_checks_before_streaming(bot: ModuleType, fake_llm: FakeClient) -> None:
     """Errors must come from the call itself, before any piece is read."""
     session = bot.new_session()
@@ -193,7 +218,10 @@ def test_reply_stream_checks_before_streaming(bot: ModuleType, fake_llm: FakeCli
 
 
 def test_user_messages_are_never_logged(
-    bot: ModuleType, fake_llm: FakeClient, caplog: pytest.LogCaptureFixture
+    bot: ModuleType,
+    fake_llm: FakeClient,
+    caplog: pytest.LogCaptureFixture,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     caplog.set_level(logging.DEBUG)
     session = bot.new_session()
@@ -203,5 +231,7 @@ def test_user_messages_are_never_logged(
     bot.reply(session, "My ID is CM-FAKE-4827-KR")
     list(bot.reply_stream(session, "My phone is 0700 000 001"))
 
-    assert "CM-FAKE-4827-KR" not in caplog.text
-    assert "0700 000 001" not in caplog.text
+    printed = capsys.readouterr()
+    for secret in ("CM-FAKE-4827-KR", "0700 000 001"):
+        assert secret not in caplog.text, "user text must not be logged"
+        assert secret not in printed.out + printed.err, "user text must not be printed"

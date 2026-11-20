@@ -26,7 +26,9 @@ class ChatRequest(BaseModel):
     """Body of POST /chat and POST /chat/stream.
 
     TODO:
-      1. Reject unknown fields: model_config = ConfigDict(extra="forbid").
+      1. Reject unknown fields and strip spaces before checking the length:
+         model_config = ConfigDict(extra="forbid", str_strip_whitespace=True).
+         (Then "   " fails here, before a session is created for it.)
       2. session_id: optional string (None starts a new session).
       3. message: string, 1 to chatbot.MAX_MESSAGE_CHARS characters (use Field(...)).
     """

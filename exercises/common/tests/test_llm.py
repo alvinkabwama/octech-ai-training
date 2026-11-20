@@ -8,7 +8,7 @@ import openai
 import pytest
 
 from exercises.common import llm
-from exercises.common.testing import FakeClient, rate_limit_error
+from exercises.common.testing import FakeClient, api_error, rate_limit_error
 
 
 @pytest.fixture
@@ -285,3 +285,32 @@ def test_chat_stream_sends_nothing_until_iterated(fake: FakeClient) -> None:
     llm.chat_stream(HI)
 
     assert fake.calls == []
+
+
+def test_chat_stream_wraps_error_event_in_llm_error(fake: FakeClient, sleeps: list[float]) -> None:
+    """An error OpenRouter sends inside the stream (after HTTP 200) arrives as APIError."""
+    fake.queue_stream([api_error("provider failed", code=502)])
+
+    with pytest.raises(llm.LLMError):
+        list(llm.chat_stream(HI))
+    assert sleeps == []
+
+
+def test_chat_stream_retries_rate_limit_error_event_before_first_piece(
+    fake: FakeClient, sleeps: list[float]
+) -> None:
+    fake.queue_stream([None, api_error("Rate limit exceeded", code=429)], ["ok"])
+
+    assert list(llm.chat_stream(HI)) == ["ok"]
+    assert sleeps == [5]
+
+
+def test_chat_stream_closes_the_stream(fake: FakeClient) -> None:
+    fake.queue_stream(["a", "b"], ["c", "d"])
+
+    list(llm.chat_stream(HI))
+    early = llm.chat_stream(HI)
+    next(early)
+    early.close()  # the caller stops early, e.g. the HTTP client disconnected
+
+    assert [s.closed for s in fake.streams] == [True, True]

@@ -15,6 +15,8 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
+import openai  # noqa: F401  (for openai.APIError, see reply())
+
 from exercises.common import llm  # noqa: F401  (you'll use llm.chat / llm.chat_stream below)
 
 MAX_MESSAGE_CHARS = 2000
@@ -81,8 +83,8 @@ def reply(session_id: str, text: str) -> str:
          MAX_MESSAGE_CHARS.
       2. Get the session's history; raise UnknownSessionError if it doesn't exist.
       3. Build the messages to send: history + the new user message, trimmed.
-      4. Call llm.chat(...). If it raises llm.LLMError, return FALLBACK_REPLY and save
-         nothing, so the user can just try again.
+      4. Call llm.chat(...). If the call fails (it raises llm.LLMError or openai.APIError),
+         return FALLBACK_REPLY and save nothing, so the user can just try again.
       5. Save the trimmed history including the new user message and the reply.
       6. Return the reply.
     Never log or print ``text``: it may contain personal details.
@@ -101,6 +103,7 @@ def reply_stream(session_id: str, text: str) -> Iterator[str]:
       2. In the inner generator, loop over llm.chat_stream(messages), yield each piece
          and collect it.
       3. When the stream has finished, save the turn with the full reply ("".join(pieces)).
-      4. If llm.LLMError is raised, yield FALLBACK_REPLY and save nothing.
+      4. If llm.LLMError or openai.APIError is raised, yield FALLBACK_REPLY and save
+         nothing (not the question, not the half-written answer).
     """
     raise NotImplementedError("TODO: reply_stream()")
