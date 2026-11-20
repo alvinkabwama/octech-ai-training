@@ -83,6 +83,17 @@ trainee/simon-abaho
 8. **Approved?** The trainer merges it into `trainee/<your-name>`. You can delete the
    week branch.
 
+## Schedule
+
+| Week | Topic | Released | PR due | Assessed |
+|---|---|---|---|---|
+| 0 | Git, your branch, first model call | Thu 12 Nov 2026 | Wed 25 Nov 2026 (late) | on review |
+| 1 | Calling a model | Thu 12 Nov 2026 | Wed 25 Nov 2026 (late) | on review |
+| 2 | Chatbot: memory, streaming, API | Fri 20 Nov 2026 | Thu 26 Nov 2026 | Fri 27 Nov 2026 |
+
+Later weeks are added here when they're released. Each lesson is in
+`exercises/week-<N>-<topic>/LESSON.md`.
+
 ## Rules
 
 - Never open a PR into `main`.
