@@ -70,7 +70,8 @@ Without Tesseract, an uploaded image whose filename matches a bundled sample (e.
 | `make ci` | Lint, format check and main tests | `.venv\Scripts\python -m ruff check . ; .venv\Scripts\python -m ruff format --check . ; .venv\Scripts\python -m pytest` |
 | `make samples` | Regenerate the synthetic sample documents | `.venv\Scripts\python mini_edrms\samples\build_samples.py` |
 
-Weekly exercises live in `exercises/week-<N>-<topic>/` (each has a `LESSON.md`). Their
+Weekly exercises live in `exercises/week-<N>-<topic>/` (each has a `LESSON.md`; release and
+due dates are in [TRAINEES.md](TRAINEES.md#schedule)). Their
 tests are left out of `make test` / `make ci` on purpose, because they fail until a
 trainee finishes the starter code.
 

@@ -16,12 +16,18 @@ Typical use::
 
 Free models are rate-limited (20 requests/minute, 50/day without credits) and can
 disappear, so every call sends a fallback list and retries briefly on HTTP 429.
+
+To show a reply as it is written, stream it::
+
+    for piece in llm.chat_stream(messages):
+        print(piece, end="", flush=True)
 """
 
 from __future__ import annotations
 
 import os
 import time
+from collections.abc import Iterator
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -128,6 +134,87 @@ def chat(
     if not content:
         raise LLMError("The model returned an empty reply. Try again or use another model.")
     return str(content)
+
+
+def chat_stream(
+    messages: list[dict[str, Any]],
+    model: str | None = None,
+    temperature: float = 0.3,
+    **kwargs: Any,
+) -> Iterator[str]:
+    """Stream the reply to ``messages`` from OpenRouter, one text piece at a time.
+
+    This is a generator: nothing is sent until you start iterating. Same fallback models
+    as :func:`chat`. A 429 is retried (5s, then 10s) only while no piece has arrived yet;
+    once text has been shown, retrying would repeat it, so a later 429 raises instead.
+
+    Raises:
+        LLMError: Still rate-limited after MAX_ATTEMPTS tries, rate-limited or failed
+            part-way through the reply, or the stream ended without any text.
+        openai.APIError: The request was refused before streaming started (bad key,
+            unknown model, ...), as with :func:`chat`.
+    """
+    models = fallback_models(model)
+    for attempt in range(MAX_ATTEMPTS):
+        received_any = False
+        stream_open = False
+        try:
+            stream = get_client().chat.completions.create(
+                model=models[0],
+                messages=messages,
+                temperature=temperature,
+                stream=True,
+                extra_body={"models": models},
+                **kwargs,
+            )
+            stream_open = True
+            try:
+                for chunk in stream:
+                    piece = _chunk_text(chunk)
+                    if piece:
+                        received_any = True
+                        yield piece
+            finally:
+                stream.close()  # also runs if the caller stops early
+        except openai.APIError as error:
+            rate_limited = _is_rate_limit(error)
+            if not stream_open and not rate_limited:
+                raise  # refused up front (bad key, unknown model): same as chat()
+            if not rate_limited:
+                # After HTTP 200, OpenRouter reports failures inside the stream; the SDK
+                # raises them as a plain APIError (also timeouts and dropped connections).
+                raise LLMError("The model failed part-way through the reply. Try again.") from error
+            if received_any:
+                raise LLMError(
+                    "OpenRouter rate limit hit part-way through the reply. Wait a minute "
+                    "and ask again."
+                ) from error
+            if attempt == MAX_ATTEMPTS - 1:
+                raise LLMError(
+                    f"OpenRouter rate limit: gave up after {MAX_ATTEMPTS} tries. Free models "
+                    "allow 20 requests/minute and 50/day; wait a minute or try again tomorrow."
+                ) from error
+            time.sleep(BACKOFF_SECONDS[attempt])
+            continue
+        if not received_any:
+            raise LLMError("The model returned an empty reply. Try again or use another model.")
+        return
+
+
+def _is_rate_limit(error: openai.APIError) -> bool:
+    """A 429, either as the HTTP status or as an error event inside the stream."""
+    if isinstance(error, openai.RateLimitError):
+        return True
+    body = error.body
+    return isinstance(body, dict) and body.get("code") == 429
+
+
+def _chunk_text(chunk: Any) -> str | None:
+    """The text in one streamed chunk, or None (usage-only chunks have no choices)."""
+    if not chunk.choices:
+        return None
+    content = chunk.choices[0].delta.content
+    return str(content) if content else None
 
 
 def ask(prompt: str, system: str | None = None, **kwargs: Any) -> str:
