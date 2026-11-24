@@ -14,7 +14,7 @@ CHECK THE BASE BRANCH BEFORE YOU CLICK "Create pull request":
 **Before submitting**
 - [ ] Base branch is `trainee/<my-name>`, not `main`
 - [ ] `make check WEEK=<N>` passes (paste the last line of the output below)
-- [ ] `make ci` is clean (ruff lint + format)
+- [ ] `make ci` is clean (lint, format check and main tests)
 - [ ] No API keys, `.env` or real client data in the diff
 
 ```

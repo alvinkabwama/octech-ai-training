@@ -17,28 +17,26 @@ trainee/simon-abaho
 ## Day 1 (once)
 
 1. Accept the GitHub invitation to the repo.
-2. Clone it and set it up:
+2. **Optional: install `make`.** It's optional. Every `make` command has a PowerShell
+   equivalent (see README), so Windows users can skip installing it.
+   - Windows: `winget install ezwinports.make`, then close and reopen the terminal
+   - macOS: `xcode-select --install`
+   - Ubuntu/Debian: `sudo apt install make`
+
+   Check it worked with `make --version`.
+3. Clone the repo and set it up:
    ```bash
    git clone https://github.com/alvinkabwama/octech-ai-training.git
    cd octech-ai-training
    make setup          # PowerShell: see README "Windows PowerShell"
    cp .env.example .env   # then paste your OpenRouter key into .env
    ```
-3. Switch to your branch (it already exists):
+   No key yet? The week 0 lesson (`exercises/week-0-git-and-setup/LESSON.md`, step 2)
+   shows how to get a free one.
+4. Switch to your branch (it already exists):
    ```bash
    git checkout trainee/<your-name>
    ```
-
-### Installing make (optional)
-
-`make` is optional. Every `make` command has a PowerShell equivalent (see README), so
-Windows users can skip installing it.
-
-- Windows: `winget install ezwinports.make`, then close and reopen the terminal
-- macOS: `xcode-select --install`
-- Ubuntu/Debian: `sudo apt install make`
-
-Check it worked with `make --version`.
 
 ## Every week
 
@@ -50,6 +48,8 @@ Check it worked with `make --version`.
    git merge origin/main         # brings in the new week's lesson and exercise
    git push
    ```
+   If the merge changed `pyproject.toml`, run `make setup` again (PowerShell:
+   `.venv\Scripts\python -m pip install -e ".[dev]"`) to install the new packages.
 2. **Start a week branch** from your branch:
    ```bash
    git checkout -b trainee/<your-name>-week-<N>
@@ -82,6 +82,17 @@ Check it worked with `make --version`.
    week branch to answer comments; the PR updates itself.
 8. **Approved?** The trainer merges it into `trainee/<your-name>`. You can delete the
    week branch.
+
+## Schedule
+
+| Week | Topic | Released | PR due | Assessed |
+|---|---|---|---|---|
+| 0 | Git, your branch, first model call | Fri 13 Nov 2026 | Wed 25 Nov 2026 (late) | on review |
+| 1 | Calling a model | Fri 13 Nov 2026 | Wed 25 Nov 2026 (late) | on review |
+| 2 | Chatbot: memory, streaming, API | Fri 20 Nov 2026 | Thu 26 Nov 2026 | Fri 27 Nov 2026 |
+
+Later weeks are added here when they're released. Each lesson is in
+`exercises/week-<N>-<topic>/LESSON.md`.
 
 ## Rules
 

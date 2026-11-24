@@ -1,6 +1,7 @@
 """Two-minute mini-EDRMS demo: upload, OCR, file and route three samples, then show the audit.
 
-Start the server first (``make run``), then: ``python scripts/demo.py``
+Start the server first (``make run``), then: ``.venv/bin/python scripts/demo.py``
+(PowerShell: ``.venv\\Scripts\\python scripts\\demo.py``).
 """
 
 import argparse

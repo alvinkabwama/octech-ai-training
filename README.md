@@ -13,16 +13,6 @@ NIN-style IDs (`CM-FAKE-4827-KR` style). Never add real client data to this repo
 
 Requires **Python 3.10+** and git.
 
-### macOS / Linux, or Windows with `make` installed
-
-```bash
-make setup               # creates .venv and installs the project + dev tools
-cp .env.example .env     # add your OpenRouter key (used from week 1)
-```
-
-On Windows the Makefile uses `python` automatically (elsewhere `python3`); override
-with `make setup PYTHON=<path-to-python>` if needed.
-
 ### Installing make (optional)
 
 `make` is optional. Every `make` command has a PowerShell equivalent (listed below and
@@ -34,6 +24,16 @@ in the Commands table), so Windows users can skip installing it.
 
 Check it worked with `make --version`.
 
+### macOS / Linux, or Windows with `make` installed
+
+```bash
+make setup               # creates .venv and installs the project + dev tools
+cp .env.example .env     # add your OpenRouter key (first used in week 0)
+```
+
+On Windows the Makefile uses `python` automatically (elsewhere `python3`); override
+with `make setup PYTHON=<path-to-python>` if needed.
+
 ### Windows PowerShell (no `make`)
 
 ```powershell
@@ -43,8 +43,7 @@ python -m venv .venv
 Copy-Item .env.example .env
 ```
 
-Each `make` target below is a single command; on PowerShell run it with
-`.venv\Scripts\python -m ...` (for example `.venv\Scripts\python -m pytest`).
+The Commands table below gives the PowerShell equivalent of every `make` target.
 
 ### Tesseract OCR (optional)
 
@@ -71,7 +70,8 @@ Without Tesseract, an uploaded image whose filename matches a bundled sample (e.
 | `make ci` | Lint, format check and main tests | `.venv\Scripts\python -m ruff check . ; .venv\Scripts\python -m ruff format --check . ; .venv\Scripts\python -m pytest` |
 | `make samples` | Regenerate the synthetic sample documents | `.venv\Scripts\python mini_edrms\samples\build_samples.py` |
 
-Weekly exercises live in `exercises/week-<N>-<topic>/` (each has a `LESSON.md`). Their
+Weekly exercises live in `exercises/week-<N>-<topic>/` (each has a `LESSON.md`; release and
+due dates are in [TRAINEES.md](TRAINEES.md#schedule)). Their
 tests are left out of `make test` / `make ci` on purpose, because they fail until a
 trainee finishes the starter code.
 
@@ -83,7 +83,7 @@ Data (SQLite database and uploaded files) goes in `./data/`, or in
 
 ```bash
 make run                       # terminal 1
-python scripts/demo.py         # terminal 2 (PowerShell: .venv\Scripts\python scripts\demo.py)
+.venv/bin/python scripts/demo.py   # terminal 2 (PowerShell: .venv\Scripts\python scripts\demo.py)
 ```
 
 The demo uploads three sample letters, extracts their text, files each one under a
@@ -149,9 +149,16 @@ as `reason`, so the audit log always shows what the agent did and why.
 ## Repository layout
 
 ```
+TRAINEES.md           how trainees work: branches, weekly routine, PRs, rules
+exercises/common/     shared OpenRouter helper (llm.py) and the fake model used in tests
+exercises/week-<N>-*/ LESSON.md, starter/ (your code) and tests/ for each week
 mini_edrms/app/       service functions + FastAPI app
 mini_edrms/samples/   synthetic documents, labels.csv, build_samples.py
 mini_edrms/tests/     tests
+scripts/run_week.py   runs a week's tests (check) or live script (live)
 scripts/demo.py       end-to-end demo against a running server
-docs/                 programme design and plans
+docs/reference/       OpenRouter getting-started guide
+docs/slides/          session decks (PDF), e.g. the kick-off
+docs/superpowers/     programme design spec and build plans
+.github/              pull request template
 ```
