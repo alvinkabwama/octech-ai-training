@@ -1,3 +1,13 @@
+"""Week 1: three prompt patterns. Replace each TODO, then run `make check WEEK=1`.
+
+Every function calls the model through the shared helper:
+
+    llm.ask(prompt, system=..., temperature=...)   one system prompt + one question
+    llm.chat(messages, temperature=...)            a full list of messages
+
+Read LESSON.md first. The tests fake the model, so `make check` costs no free requests;
+`make live WEEK=1` runs these functions against real OpenRouter models.
+"""
 from __future__ import annotations
 
 import json
