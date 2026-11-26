@@ -13,6 +13,7 @@ Read LESSON.md first. The tests fake the model, so `make check` costs no free re
 
 from __future__ import annotations
 
+import uuid
 from collections.abc import Iterator
 
 import openai  # noqa: F401  (for openai.APIError, see reply())
@@ -26,7 +27,12 @@ FALLBACK_REPLY = "Sorry, I couldn't answer that just now. Please try again in a 
 # TODO: write the system prompt for "Octech Help", a fictional assistant that answers
 # questions about Octech's products in plain words. Say what it should do when it doesn't
 # know, and keep answers short. It must contain the words "Octech Help".
-SYSTEM_PROMPT = "TODO: write the Octech Help system prompt"
+SYSTEM_PROMPT = (
+    "You are Octech Help, a friendly assistant that answers questions about Octech's "
+    "products in plain words. Keep answers short, at most 3 sentences. If you don't "
+    "know the answer, say so honestly and suggest contacting the Octech support team. "
+    "Never make up product details."
+)
 
 
 class UnknownSessionError(KeyError):
@@ -39,71 +45,68 @@ SESSIONS: dict[str, list[dict[str, str]]] = {}
 
 
 def new_session() -> str:
-    """Start a conversation and return its id.
-
-    TODO:
-      1. Make a new random id (hint: uuid.uuid4().hex).
-      2. Store it in SESSIONS with a list holding just the system message.
-      3. Return the id.
-    """
-    raise NotImplementedError("TODO: new_session()")
+    """Start a conversation and return its id."""
+    session_id = uuid.uuid4().hex
+    SESSIONS[session_id] = [{"role": "system", "content": SYSTEM_PROMPT}]
+    return session_id
 
 
 def end_session(session_id: str) -> None:
-    """Forget a conversation.
-
-    TODO: remove ``session_id`` from SESSIONS; raise UnknownSessionError if it isn't there.
-    """
-    raise NotImplementedError("TODO: end_session()")
+    """Forget a conversation."""
+    if session_id not in SESSIONS:
+        raise UnknownSessionError(session_id)
+    del SESSIONS[session_id]
 
 
 def trim_history(
     messages: list[dict[str, str]], max_turns: int = MAX_TURNS
 ) -> list[dict[str, str]]:
-    """Keep the system message(s) plus only the last ``max_turns`` turns.
+    """Keep the system message(s) plus only the last ``max_turns`` turns."""
+    system = [m for m in messages if m["role"] == "system"]
+    rest = [m for m in messages if m["role"] != "system"]
+    user_positions = [i for i, m in enumerate(rest) if m["role"] == "user"]
+    if len(user_positions) > max_turns:
+        rest = rest[user_positions[-max_turns] :]
+    return system + rest
 
-    A turn starts at a ``user`` message and includes the ``assistant`` reply after it.
-    The newest user message (not answered yet) counts as a turn.
 
-    TODO:
-      1. Split the system messages from the rest.
-      2. Find where each user message is. If there are more than max_turns, keep
-         everything from the max_turns-th last user message onwards.
-      3. Return system messages + the kept messages as a NEW list. Don't change
-         ``messages`` itself: the caller may still be using it.
-    """
-    raise NotImplementedError("TODO: trim_history()")
+def _check_and_build(session_id: str, text: str) -> tuple[str, list[dict[str, str]]]:
+    """Validate the message and session; return the clean text and messages to send."""
+    text = text.strip()
+    if not text or len(text) > MAX_MESSAGE_CHARS:
+        raise ValueError(f"message must be 1 to {MAX_MESSAGE_CHARS} characters")
+    if session_id not in SESSIONS:
+        raise UnknownSessionError(session_id)
+    messages = trim_history([*SESSIONS[session_id], {"role": "user", "content": text}])
+    return text, messages
 
 
 def reply(session_id: str, text: str) -> str:
-    """Answer ``text`` in this session and remember the turn.
-
-    TODO:
-      1. Check the message: strip it; raise ValueError if it's empty or longer than
-         MAX_MESSAGE_CHARS.
-      2. Get the session's history; raise UnknownSessionError if it doesn't exist.
-      3. Build the messages to send: history + the new user message, trimmed.
-      4. Call llm.chat(...). If the call fails (it raises llm.LLMError or openai.APIError),
-         return FALLBACK_REPLY and save nothing, so the user can just try again.
-      5. Save the trimmed history including the new user message and the reply.
-      6. Return the reply.
-    Never log or print ``text``: it may contain personal details.
-    """
-    raise NotImplementedError("TODO: reply()")
+    """Answer ``text`` in this session and remember the turn."""
+    _, messages = _check_and_build(session_id, text)
+    try:
+        answer = llm.chat(messages)
+    except (llm.LLMError, openai.APIError):
+        return FALLBACK_REPLY
+    SESSIONS[session_id] = trim_history([*messages, {"role": "assistant", "content": answer}])
+    return answer
 
 
 def reply_stream(session_id: str, text: str) -> Iterator[str]:
-    """Like :func:`reply`, but yields the answer piece by piece as the model writes it.
+    """Like :func:`reply`, but yields the answer piece by piece as the model writes it."""
+    # These checks run NOW, when reply_stream() is called, before any streaming starts.
+    _, messages = _check_and_build(session_id, text)
 
-    TODO:
-      1. Do the checks from reply() (steps 1-3) straight away, BEFORE streaming starts,
-         so a bad message or unknown session raises when reply_stream() is called. Hint:
-         make this a normal function that checks, then returns an inner generator.
-         (A function with `yield` in it runs nothing until someone iterates it.)
-      2. In the inner generator, loop over llm.chat_stream(messages), yield each piece
-         and collect it.
-      3. When the stream has finished, save the turn with the full reply ("".join(pieces)).
-      4. If llm.LLMError or openai.APIError is raised, yield FALLBACK_REPLY and save
-         nothing (not the question, not the half-written answer).
-    """
-    raise NotImplementedError("TODO: reply_stream()")
+    def pieces() -> Iterator[str]:
+        collected: list[str] = []
+        try:
+            for piece in llm.chat_stream(messages):
+                collected.append(piece)
+                yield piece
+        except (llm.LLMError, openai.APIError):
+            yield FALLBACK_REPLY
+            return  # save nothing: not the question, not the half-written answer
+        answer = "".join(collected)
+        SESSIONS[session_id] = trim_history([*messages, {"role": "assistant", "content": answer}])
+
+    return pieces()
