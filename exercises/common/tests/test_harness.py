@@ -55,3 +55,17 @@ def test_load_starter_missing_module_explains(
 
     with pytest.raises(FileNotFoundError, match="nothing_here.py"):
         load_starter("nothing_here")
+
+
+def test_fake_llm_streams_queued_pieces(fake_llm: FakeClient) -> None:
+    fake_llm.queue_stream(["one ", "two"])
+
+    assert "".join(llm.chat_stream([{"role": "user", "content": "count"}])) == "one two"
+    assert fake_llm.calls[0]["stream"] is True
+
+
+def test_fake_llm_rejects_pieces_without_stream(fake_llm: FakeClient) -> None:
+    fake_llm.queue_stream(["a", "b"])
+
+    with pytest.raises(AssertionError, match="stream=True"):
+        llm.chat([{"role": "user", "content": "x"}])
