@@ -6,7 +6,7 @@ week depends on this going smoothly, so take your time.
 
 ## What you'll learn
 
-- What a git branch is, and how this repo uses branches so four people can work
+- What a git branch is, and how this repo uses branches so several people can work
   without stepping on each other.
 - Why `main` is off limits to you, and how to check your branch before you push.
 - How to set up the repo on Windows (PowerShell) and on macOS/Linux.
@@ -59,7 +59,7 @@ the trainer straight away. Don't try to fix it yourself.
 
 ### OpenRouter: one key, many models
 
-From week 1 you call AI models through **OpenRouter**, one API in front of hundreds of
+From this week on you call AI models through **OpenRouter**, one API in front of hundreds of
 models. Models whose ID ends in `:free` cost nothing. You need an OpenRouter key (free,
 no credit card), not an OpenAI or Google key.
 
@@ -79,6 +79,15 @@ Two rules that never bend:
 ## Code walkthrough
 
 ### 1. Set up the repo
+
+**Installing make (optional).** `make` is optional. Every `make` command has a
+PowerShell equivalent (shown next to it below), so Windows users can skip installing it.
+
+- Windows: `winget install ezwinports.make`, then close and reopen the terminal
+- macOS: `xcode-select --install`
+- Ubuntu/Debian: `sudo apt install make`
+
+Check it worked with `make --version`.
 
 **macOS / Linux, or Windows with `make` installed:**
 
@@ -104,15 +113,6 @@ git checkout trainee/<your-name>
 
 Check it worked: `make test` (PowerShell: `.venv\Scripts\python -m pytest`) should end
 with `passed`.
-
-**Installing make (optional).** `make` is optional. Every `make` command has a
-PowerShell equivalent that's already listed, so Windows users can skip installing it.
-
-- Windows: `winget install ezwinports.make`, then close and reopen the terminal
-- macOS: `xcode-select --install`
-- Ubuntu/Debian: `sudo apt install make`
-
-Check it worked with `make --version`.
 
 ### 2. Get your OpenRouter key
 

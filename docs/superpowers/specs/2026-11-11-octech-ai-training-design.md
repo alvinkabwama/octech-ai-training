@@ -38,6 +38,10 @@ AI workflow versus an agent.
 | 7 | Evaluation and safety | Accuracy on labelled set; poisoned-letter defence | ADR 0042, 0019, 0029; 16_testing |
 | 8 | Demo day | Demo, one ADR each, skills re-score | - |
 
+Schedule so far: weeks 0 and 1 released 2026-11-12 (kick-off 2026-11-13); week 2
+released 2026-11-20, PRs due 2026-11-26, assessed 2026-11-27. Later dates are set as each
+week is released.
+
 Week 3 embeddings use a free local model (sentence-transformers) + ChromaDB so
 retrieval does not consume OpenRouter requests.
 Weeks 5-6 use plain OpenAI-SDK tool calling so the agent loop is visible; Microsoft
@@ -61,15 +65,18 @@ given product feature and why.
 ```
 octech-ai-training/
   README.md            setup, OpenRouter key, make commands
-  Makefile             setup / run / test / fix / ci
+  TRAINEES.md          branch workflow, weekly routine, rules
+  Makefile             setup / run / test / fix / ci / samples / check / live
   pyproject.toml
   .env.example         OPENROUTER_API_KEY, OPENROUTER_MODEL
-  exercises/weekN/     README (task + done-criteria), starter code, tests
+  exercises/common/    shared OpenRouter helper + test fake
+  exercises/week-N-<topic>/  LESSON.md, starter/, tests/
+  scripts/             run_week.py (check / live), demo.py
   mini_edrms/          practice app, no AI
     app/               main, db, documents, ocr, filing, routing, audit
     samples/           ~20 synthetic docs + labels.csv + poisoned letter
     tests/
-  docs/                learning path, ADR template, skills matrix, specs
+  docs/                reference (OpenRouter guide), specs and plans
 ```
 
 ### 5.1 mini-EDRMS
@@ -92,13 +99,12 @@ octech-ai-training/
 
 ### 5.2 Exercises
 
-- Each week: README (goal, steps, done-criteria, chatbot reading), starter file(s)
-  with TODOs, tests.
-- Tests check structure/behaviour with the model call stubbed, so `make test` never
-  spends OpenRouter requests. A separate `make live WEEK=n` runs against OpenRouter.
+- Each week: LESSON.md (format in 10.2), starter file(s) with TODOs, tests.
+- Tests check structure/behaviour with the model call stubbed, so `make check WEEK=n`
+  never spends OpenRouter requests. A separate `make live WEEK=n` runs against OpenRouter.
 - A reference solution per week is kept out of the participants' branch (folder
-  `solutions/`, git-ignored on the training branch or kept by Alvin) and is run once
-  live to prove each exercise is achievable on free models.
+  `solutions/`, git-ignored on the training branch or kept by Alvin). Its stubbed tests
+  must pass; there is no separate live run (see 10.5).
 - Shared helper `exercises/common/llm.py`: OpenRouter client, fallback model list,
   retry on 429.
 
@@ -120,7 +126,9 @@ octech-ai-training/
 ## 8. Testing / done
 
 - `make test` green on mini-EDRMS baseline and on every exercise's stubbed tests.
-- Each week's reference solution run once live against OpenRouter free models.
+- Each week's reference solution passes `make check WEEK=n STARTER=solutions/week-n`, and
+  the bare starter fails it. The live check is the `make live` output trainees paste in
+  their PRs (10.5).
 - Deck, doc and sheet reviewed by Alvin.
 
 ## 9. Out of scope
@@ -176,5 +184,17 @@ chatbot does this" boxes, not built. MAF is an optional week 6 stretch.
   checkpoint done, PR approved; weeks 6-8 add a live demo. Scores go in the
   skills-gap sheet.
 - Checks run locally (`make ci`), not in GitHub Actions, to save Actions minutes.
-- Reference solutions stay on the trainer's machine only, never in the shared repo.
+- Reference solutions stay on the trainer's machine until a week's reviews are done (see 10.5).
 - Full trainee instructions: `TRAINEES.md`.
+
+## 10.5 Amendments (2026-11-20)
+
+- **No live run of reference solutions.** No trainer OpenRouter key is used. A solution is
+  proven by its stubbed tests (`make check WEEK=n STARTER=solutions/week-n`); the live
+  output each trainee pastes in their PR is the live check that the exercise works on free
+  models.
+- **Publishing solutions.** The repo is public, so solutions stay on the trainer's machine
+  (a local `solutions` branch) until that week is released **and** its trainee reviews are
+  done. Then they reach `main` as one PR per week.
+- **Week 2** (chatbot: memory, streaming, FastAPI) adds `llm.chat_stream()` to the shared
+  helper, with a streaming fake in the test harness.
