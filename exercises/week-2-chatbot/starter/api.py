@@ -33,6 +33,11 @@ class ChatRequest(BaseModel):
       3. message: string, 1 to chatbot.MAX_MESSAGE_CHARS characters (use Field(...)).
     """
 
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    session_id: str | None = None
+    message: str = Field(min_length=1, max_length=chatbot.MAX_MESSAGE_CHARS)
+
 
 class ChatResponse(BaseModel):
     """Body returned by POST /chat."""
@@ -51,6 +56,14 @@ def chat(request: ChatRequest) -> ChatResponse:
       3. Turn chatbot.UnknownSessionError into HTTP 404 and ValueError into HTTP 422
          (raise HTTPException(status_code=..., detail=...)).
     """
+    session_id = request.session_id if request.session_id is not None else chatbot.new_session()
+    try:
+        answer = chatbot.reply(session_id, request.message)
+    except chatbot.UnknownSessionError as error:
+        raise HTTPException(status_code=404, detail="Unknown session") from error
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    return ChatResponse(session_id=session_id, reply=answer)
     raise NotImplementedError("TODO: POST /chat")
 
 
@@ -64,6 +77,20 @@ def chat_stream(request: ChatRequest) -> StreamingResponse:
       2. Return StreamingResponse(pieces, media_type="text/plain") with the session id
          in an "X-Session-Id" header (headers={...}), so the client can continue.
     """
+
+    session_id = request.session_id if request.session_id is not None else chatbot.new_session()
+    try:
+        pieces = chatbot.reply_stream(session_id, request.message)
+    except chatbot.UnknownSessionError as error:
+        raise HTTPException(status_code=404, detail="Unknown session") from error
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+    return StreamingResponse(
+        pieces,
+        media_type="text/plain",
+        headers={"X-Session-Id": session_id},
+    )
     raise NotImplementedError("TODO: POST /chat/stream")
 
 
@@ -74,4 +101,9 @@ def delete_chat(session_id: str) -> Response:
     TODO: call chatbot.end_session(...); 404 if the session is unknown; then
     return Response(status_code=204).
     """
+    try:
+        chatbot.end_session(session_id)
+    except chatbot.UnknownSessionError as error:
+        raise HTTPException(status_code=404, detail="Unknown session") from error
+    return Response(status_code=204)
     raise NotImplementedError("TODO: DELETE /chat/{session_id}")
