@@ -23,15 +23,12 @@ app = FastAPI(title="Octech Help chatbot (week 2)")
 
 
 class ChatRequest(BaseModel):
-    """Body of POST /chat and POST /chat/stream.
+    """Body of POST /chat and POST /chat/stream."""
 
-    TODO:
-      1. Reject unknown fields and strip spaces before checking the length:
-         model_config = ConfigDict(extra="forbid", str_strip_whitespace=True).
-         (Then "   " fails here, before a session is created for it.)
-      2. session_id: optional string (None starts a new session).
-      3. message: string, 1 to chatbot.MAX_MESSAGE_CHARS characters (use Field(...)).
-    """
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    session_id: str | None = None
+    message: str = Field(min_length=1, max_length=chatbot.MAX_MESSAGE_CHARS)
 
 
 class ChatResponse(BaseModel):
@@ -43,35 +40,43 @@ class ChatResponse(BaseModel):
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest) -> ChatResponse:
-    """Answer one message.
+    """Answer one message."""
 
-    TODO:
-      1. Use request.session_id, or chatbot.new_session() if it's None.
-      2. Call chatbot.reply(...).
-      3. Turn chatbot.UnknownSessionError into HTTP 404 and ValueError into HTTP 422
-         (raise HTTPException(status_code=..., detail=...)).
-    """
-    raise NotImplementedError("TODO: POST /chat")
+    session_id = request.session_id or chatbot.new_session()
+
+    try:
+        answer = chatbot.reply(session_id, request.message)
+    except chatbot.UnknownSessionError:
+        raise HTTPException(status_code=404, detail="Session not found.") from None
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from None
+
+    return ChatResponse(session_id=session_id, reply=answer)
 
 
 @app.post("/chat/stream")
 def chat_stream(request: ChatRequest) -> StreamingResponse:
-    """Answer one message as a stream of plain text.
+    """Answer one message as a stream of plain text."""
 
-    TODO:
-      1. Same session handling and errors as chat(). chatbot.reply_stream() raises
-         before streaming starts, so the 404/422 can still be sent.
-      2. Return StreamingResponse(pieces, media_type="text/plain") with the session id
-         in an "X-Session-Id" header (headers={...}), so the client can continue.
-    """
-    raise NotImplementedError("TODO: POST /chat/stream")
+    session_id = request.session_id or chatbot.new_session()
+
+    try:
+        pieces = chatbot.reply_stream(session_id, request.message)
+    except chatbot.UnknownSessionError:
+        raise HTTPException(status_code=404, detail="Session not found.") from None
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from None
+
+    return StreamingResponse(pieces, media_type="text/plain", headers={"X-Session-Id": session_id})
 
 
 @app.delete("/chat/{session_id}", status_code=204)
 def delete_chat(session_id: str) -> Response:
-    """End a session.
+    """End a session."""
 
-    TODO: call chatbot.end_session(...); 404 if the session is unknown; then
-    return Response(status_code=204).
-    """
-    raise NotImplementedError("TODO: DELETE /chat/{session_id}")
+    try:
+        chatbot.end_session(session_id)
+    except chatbot.UnknownSessionError:
+        raise HTTPException(status_code=404, detail="Session not found.") from None
+
+    return Response(status_code=204)
