@@ -13,6 +13,7 @@ Read LESSON.md first. The tests fake the model, so `make check` costs no free re
 
 from __future__ import annotations
 
+import uuid
 from collections.abc import Iterator
 
 import openai  # noqa: F401  (for openai.APIError, see reply())
@@ -26,7 +27,13 @@ FALLBACK_REPLY = "Sorry, I couldn't answer that just now. Please try again in a 
 # TODO: write the system prompt for "Octech Help", a fictional assistant that answers
 # questions about Octech's products in plain words. Say what it should do when it doesn't
 # know, and keep answers short. It must contain the words "Octech Help".
-SYSTEM_PROMPT = "TODO: write the Octech Help system prompt"
+SYSTEM_PROMPT = (
+    "You are Octech Help, a friendly assistant that answers questions "
+    "about Octech's products. Explain things in simple, plain language "
+    "and keep your answers short and helpful. Only provide information "
+    "you know to be accurate. If you don't know the answer, say so "
+    "honestly and suggest contacting Octech support for assistance."
+)
 
 
 class UnknownSessionError(KeyError):
@@ -46,7 +53,11 @@ def new_session() -> str:
       2. Store it in SESSIONS with a list holding just the system message.
       3. Return the id.
     """
-    raise NotImplementedError("TODO: new_session()")
+    session_id = uuid.uuid4().hex
+
+    SESSIONS[session_id] = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+    return session_id
 
 
 def end_session(session_id: str) -> None:
@@ -54,7 +65,10 @@ def end_session(session_id: str) -> None:
 
     TODO: remove ``session_id`` from SESSIONS; raise UnknownSessionError if it isn't there.
     """
-    raise NotImplementedError("TODO: end_session()")
+    try:
+        del SESSIONS[session_id]
+    except KeyError:
+        raise UnknownSessionError(session_id) from None
 
 
 def trim_history(
@@ -72,7 +86,21 @@ def trim_history(
       3. Return system messages + the kept messages as a NEW list. Don't change
          ``messages`` itself: the caller may still be using it.
     """
-    raise NotImplementedError("TODO: trim_history()")
+    system_messages = [message for message in messages if message["role"] == "system"]
+
+    conversation_messages = [message for message in messages if message["role"] != "system"]
+
+    user_positions = [
+        index for index, message in enumerate(conversation_messages) if message["role"] == "user"
+    ]
+
+    if len(user_positions) <= max_turns:
+        kept_messages = conversation_messages
+    else:
+        start_index = user_positions[-max_turns]
+        kept_messages = conversation_messages[start_index:]
+
+    return system_messages + kept_messages
 
 
 def reply(session_id: str, text: str) -> str:
@@ -89,7 +117,27 @@ def reply(session_id: str, text: str) -> str:
       6. Return the reply.
     Never log or print ``text``: it may contain personal details.
     """
-    raise NotImplementedError("TODO: reply()")
+    text = text.strip()
+
+    if not text:
+        raise ValueError("Message cannot be empty.")
+
+    if len(text) > MAX_MESSAGE_CHARS:
+        raise ValueError("Message is too long.")
+
+    if session_id not in SESSIONS:
+        raise UnknownSessionError(session_id)
+
+    messages = trim_history(SESSIONS[session_id] + [{"role": "user", "content": text}])
+
+    try:
+        answer = llm.chat(messages)
+    except (llm.LLMError, openai.APIError):
+        return FALLBACK_REPLY
+
+    SESSIONS[session_id] = messages + [{"role": "assistant", "content": answer}]
+
+    return answer
 
 
 def reply_stream(session_id: str, text: str) -> Iterator[str]:
@@ -106,4 +154,33 @@ def reply_stream(session_id: str, text: str) -> Iterator[str]:
       4. If llm.LLMError or openai.APIError is raised, yield FALLBACK_REPLY and save
          nothing (not the question, not the half-written answer).
     """
-    raise NotImplementedError("TODO: reply_stream()")
+    text = text.strip()
+
+    if not text:
+        raise ValueError("Message cannot be empty.")
+
+    if len(text) > MAX_MESSAGE_CHARS:
+        raise ValueError("Message is too long.")
+
+    if session_id not in SESSIONS:
+        raise UnknownSessionError(session_id)
+
+    messages = trim_history(SESSIONS[session_id] + [{"role": "user", "content": text}])
+
+    def generate() -> Iterator[str]:
+        pieces = []
+
+        try:
+            for piece in llm.chat_stream(messages):
+                pieces.append(piece)
+                yield piece
+
+        except (llm.LLMError, openai.APIError):
+            yield FALLBACK_REPLY
+            return
+
+        full_reply = "".join(pieces)
+
+        SESSIONS[session_id] = messages + [{"role": "assistant", "content": full_reply}]
+
+    return generate()
